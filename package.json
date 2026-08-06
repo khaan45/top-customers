@@ -4,7 +4,7 @@
   "description": "Real backend for the Top Customer Vote app: student lookup, WhatsApp/SMS OTP delivery, vote recording.",
   "main": "server.js",
   "engines": {
-    "node": ">=18.0.0"
+     "node": ">=18.0.0 <21.0.0"
   },
   "scripts": {
     "start": "node server.js",
