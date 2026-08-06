@@ -1,0 +1,51 @@
+services:
+  - type: web
+    name: top-customer-vote-backend
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: SESSION_SECRET
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: VOTING_START
+        sync: false
+      - key: VOTING_END
+        sync: false
+      - key: WHATSAPP_TOKEN
+        sync: false
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: WHATSAPP_TEMPLATE_NAME
+        value: otp_code
+      - key: WHATSAPP_TEMPLATE_LANG
+        value: en_US
+      - key: SMS_PROVIDER
+        value: console
+      - key: AT_API_KEY
+        sync: false
+      - key: AT_USERNAME
+        sync: false
+      - key: AT_SENDER_ID
+        sync: false
+      - key: STUDENT_DB_PATH
+        value: ./data/students.db
+      - key: OTP_TTL_SECONDS
+        value: "300"
+      - key: SESSION_TTL_SECONDS
+        value: "600"
+
+# Notes:
+# - "sync: false" means Render will prompt you to type the value in the
+#   dashboard instead of storing it in this file (this file IS meant to be
+#   committed to git, so nothing secret goes in here directly).
+# - WHATSAPP_TOKEN is a real secret — enter it in the Render dashboard,
+#   never commit it. Meta's default token from the API Setup page expires
+#   in 24 hours; swap it for a permanent token (System User token) before
+#   your actual voting period, or OTPs will silently stop sending mid-contest.
+# - SMS_PROVIDER defaults to "console" here, which only prints codes to the
+#   Render logs instead of actually texting anyone — switch it to
+#   "africastalking" or "generic_http" (with real AT_*/GENERIC_SMS_* values)
+#   before real students try the SMS option.

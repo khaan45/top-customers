@@ -1,0 +1,1592 @@
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&family=Caveat:wght@600&display=swap">
+<style>
+  #campaign-root, #tcv-root { max-width: 900px; margin: 0 auto; }
+  .campaign-page-wrap { display: flex; flex-direction: column; }
+  #campaign-root { border-radius: 18px 18px 0 0; }
+  #tcv-root { border-radius: 0 0 18px 18px; }
+  .campaign-divider { height: 4px; background: linear-gradient(90deg, #F0A91A, #F0A63D); max-width: 900px; margin: 0 auto; }
+  :root {
+    --navy: #0B2544;
+    --navy-deep: #09153F;
+    --gold: #F0A91A;
+    --cream: #F8F5F0;
+    --white: #FFFFFF;
+    --leaf: #C9902E;
+  }
+  * { box-sizing: border-box; }
+  #campaign-root {
+    font-family: 'Inter', sans-serif;
+    background: var(--cream);
+    border-radius: 18px;
+    overflow: hidden;
+    position: relative;
+  }
+  .cb-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    min-height: 560px;
+  }
+  @media (max-width: 720px) {
+    .cb-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- LEFT: copy ---------- */
+  .cb-left {
+    padding: 34px 30px 26px;
+    position: relative;
+    z-index: 2;
+  }
+  .cb-seal {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+  .cb-seal svg { width: 56px; height: 56px; flex-shrink: 0; }
+  .cb-seal-name {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 17px;
+    letter-spacing: 0.03em;
+    color: var(--navy);
+    line-height: 1.15;
+  }
+  .cb-seal-tag {
+    font-family: 'Caveat', cursive;
+    font-size: 17px;
+    color: var(--leaf);
+    font-weight: 600;
+    margin-top: 1px;
+  }
+
+  .cb-headline {
+    font-family: 'Bebas Neue', sans-serif;
+    color: var(--navy);
+    font-size: 58px;
+    line-height: 0.92;
+    letter-spacing: 0.01em;
+    margin: 0;
+  }
+  .cb-headline .vote-word {
+    display: inline-flex;
+    align-items: center;
+    color: var(--gold);
+    gap: 6px;
+  }
+  .cb-check-o {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.85em;
+    height: 0.85em;
+    border-radius: 50%;
+    background: var(--gold);
+    position: relative;
+    top: 0.02em;
+  }
+  .cb-check-o svg { width: 58%; height: 58%; }
+
+  .cb-ribbon-wrap { margin: 16px 0 14px; }
+  .cb-ribbon {
+    display: inline-block;
+    position: relative;
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    padding: 9px 26px;
+  }
+  .cb-ribbon::before, .cb-ribbon::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    border-top: 19px solid var(--navy);
+    border-bottom: 19px solid var(--navy);
+  }
+  .cb-ribbon::before { left: -14px; border-left: 14px solid transparent; }
+  .cb-ribbon::after { right: -14px; border-right: 14px solid transparent; }
+  .cb-ribbon b { color: var(--gold); }
+
+  .cb-sub {
+    font-size: 15px;
+    line-height: 1.55;
+    color: #33415A;
+    max-width: 380px;
+    margin: 4px 0 26px;
+  }
+  .cb-sub b { color: var(--navy); }
+
+  .cb-features {
+    display: flex;
+    gap: 22px;
+  }
+  .cb-feature {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    max-width: 130px;
+  }
+  .cb-feature-ic {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: var(--navy);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 2px var(--gold);
+  }
+  .cb-feature-ic svg { width: 22px; height: 22px; }
+  .cb-feature-label {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    color: var(--navy);
+    line-height: 1.3;
+    text-transform: uppercase;
+  }
+  .cb-divider { width: 1px; align-self: stretch; background: #DCD3C4; margin-top: 4px; }
+
+  /* ---------- RIGHT: scene ---------- */
+  .cb-right {
+    position: relative;
+    background:
+      radial-gradient(circle at 70% 20%, rgba(255,255,255,0.10), transparent 45%),
+      linear-gradient(160deg, #2B1B10 0%, #4A2E17 38%, #6B431F 62%, #8A5A28 100%);
+    overflow: hidden;
+  }
+  /* soft bokeh window-light dots, standing in for the cafeteria interior */
+  .cb-bokeh { position: absolute; inset: 0; opacity: 0.5; }
+  .cb-bokeh span {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,224,153,0.9), rgba(255,224,153,0) 70%);
+  }
+
+  .cb-plate-scene {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 62%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .cb-medal {
+    position: absolute;
+    top: 22px; right: 26px;
+    width: 168px;
+    text-align: center;
+    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.35));
+  }
+  .cb-vote-now {
+    position: absolute;
+    left: 18px;
+    top: 46%;
+    width: 138px;
+    filter: drop-shadow(0 8px 14px rgba(0,0,0,0.35));
+  }
+
+  @media (max-width: 720px) {
+    .cb-right { min-height: 360px; }
+    .cb-medal { width: 128px; top: 16px; right: 16px; }
+    .cb-vote-now { width: 112px; top: auto; bottom: 30%; }
+  }
+
+  /* ---------- FOOTER ---------- */
+  .cb-footer {
+    background: var(--navy-deep);
+    color: var(--white);
+    padding: 18px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    position: relative;
+    z-index: 2;
+  }
+  .cb-footer::before {
+    content: "";
+    position: absolute;
+    top: -22px; left: 0; right: 0; height: 22px;
+    background: var(--cream);
+    border-radius: 0 0 0 0;
+    clip-path: ellipse(60% 100% at 50% 0%);
+    background: var(--gold);
+  }
+  .cb-footer-item { display: flex; align-items: center; gap: 10px; }
+  .cb-footer-ic {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 1.5px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .cb-footer-ic svg { width: 16px; height: 16px; }
+  .cb-footer-label { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+  .cb-footer-value { font-size: 13px; font-weight: 700; color: var(--white); }
+  .cb-footer-note {
+    font-family: 'Caveat', cursive;
+    font-size: 19px;
+    color: rgba(255,255,255,0.85);
+    text-align: right;
+    line-height: 1.3;
+  }
+  @media (max-width: 720px) {
+    .cb-footer { justify-content: center; text-align: center; }
+    .cb-footer-note { text-align: center; width: 100%; }
+  }
+  :root {
+    --teal: #0E3D39;
+    --teal-deep: #082A27;
+    --paper: #FBF3E7;
+    --paper-dim: #EFE4D2;
+    --ink: #1C1C1C;
+    --coral: #E2543D;
+    --amber: #F0A63D;
+    --green: #4C9A6B;
+  }
+  * { box-sizing: border-box; }
+  #tcv-root {
+    background: radial-gradient(circle at 15% 0%, #124A45 0%, var(--teal) 45%, var(--teal-deep) 100%);
+    color: var(--paper);
+    font-family: 'Inter', sans-serif;
+    padding: 0 0 48px;
+    min-height: 100%;
+    border-radius: 18px;
+    overflow: hidden;
+  }
+  .tcv-brand-banner {
+    position: relative;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--amber) 0px, var(--amber) 22px,
+      #DD9636 22px, #DD9636 44px
+    );
+    color: var(--teal-deep);
+    text-align: center;
+    padding: 14px 20px 18px;
+  }
+  .tcv-brand-name {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .tcv-brand-name svg { flex-shrink: 0; width: 20px; height: 20px; }
+  .tcv-brand-ic { font-size: 16px; }
+  .tcv-brand-tagline {
+    font-family: 'Space Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(8,42,39,0.65);
+    margin-top: 3px;
+  }
+  .tcv-brand-banner::before, .tcv-brand-banner::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 16px; height: 16px;
+    background: var(--teal-deep);
+    border-radius: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+  }
+  .tcv-brand-banner::before { left: -8px; }
+  .tcv-brand-banner::after { right: -8px; }
+  .tcv-scallop {
+    height: 14px;
+    background-image: radial-gradient(circle at 11px 0, var(--teal-deep) 11px, transparent 12px),
+                       radial-gradient(circle at 11px 0, var(--amber) 9px, transparent 10px);
+    background-size: 22px 14px;
+    background-repeat: repeat-x;
+    background-position: 0 0, 0 0;
+    margin-bottom: 16px;
+  }
+  .tcv-body { padding: 14px 18px 0; }
+  .tcv-wrap { max-width: 640px; margin: 0 auto; }
+  .tcv-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--amber);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .tcv-eyebrow::before { content: ""; width: 22px; height: 1px; background: var(--amber); }
+  .tcv-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+    margin: 0 0 8px;
+    color: var(--paper);
+  }
+  .tcv-title span { color: var(--amber); }
+  .tcv-sub {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: rgba(251,243,231,0.75);
+    max-width: 480px;
+    margin: 0 0 22px;
+  }
+  .tcv-rules { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+  .tcv-chip {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--paper);
+    background: rgba(251,243,231,0.08);
+    border: 1px solid rgba(251,243,231,0.18);
+    padding: 7px 12px;
+    border-radius: 999px;
+  }
+  .tcv-chip b { color: var(--amber); }
+
+  /* Voting progress (top) */
+  .tcv-progress {
+    background: rgba(251,243,231,0.06);
+    border: 1px solid rgba(251,243,231,0.16);
+    border-radius: 12px;
+    padding: 14px 16px 16px;
+    margin-bottom: 20px;
+  }
+  .tcv-progress-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 9px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .tcv-progress-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .tcv-progress-pct {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: var(--paper);
+  }
+  .tcv-progress-track {
+    height: 10px;
+    background: rgba(251,243,231,0.12);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .tcv-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--coral), var(--amber));
+    width: 0%;
+    border-radius: 999px;
+    transition: width 0.6s cubic-bezier(.2,.8,.2,1);
+  }
+  .tcv-progress-bottom {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10.5px;
+    color: rgba(251,243,231,0.55);
+  }
+  .tcv-progress-bottom b { color: var(--paper); font-family: 'Inter', sans-serif; font-weight: 700; }
+
+  .tcv-progress-divider {
+    height: 1px;
+    background: rgba(251,243,231,0.12);
+    margin: 13px 0 12px;
+  }
+  .tcv-finalist-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .tcv-finalist-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(251,243,231,0.55);
+  }
+  .tcv-finalist-count {
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--paper);
+  }
+  .tcv-finalist-segs {
+    display: flex;
+    gap: 6px;
+  }
+  .tcv-finalist-seg {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+  .tcv-finalist-seg-bar {
+    width: 100%;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(251,243,231,0.14);
+  }
+  .tcv-finalist-seg.has-votes .tcv-finalist-seg-bar {
+    background: linear-gradient(90deg, var(--coral), var(--amber));
+  }
+  .tcv-finalist-seg-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 9.5px;
+    color: rgba(251,243,231,0.4);
+  }
+  .tcv-finalist-seg.has-votes .tcv-finalist-seg-num { color: var(--amber); }
+
+  /* Voting period banner */
+  .tcv-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 22px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11.5px;
+  }
+  .tcv-banner.open { background: rgba(76,154,107,0.16); border: 1px solid rgba(76,154,107,0.4); color: #B9E3C6; }
+  .tcv-banner.before { background: rgba(240,166,61,0.14); border: 1px solid rgba(240,166,61,0.4); color: #F6D9A6; }
+  .tcv-banner.closed { background: rgba(251,243,231,0.08); border: 1px solid rgba(251,243,231,0.2); color: rgba(251,243,231,0.7); }
+  .tcv-banner-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+  .tcv-banner.open .tcv-banner-dot { background: #6FD696; box-shadow: 0 0 0 3px rgba(111,214,150,0.25); }
+  .tcv-banner.before .tcv-banner-dot { background: var(--amber); }
+  .tcv-banner.closed .tcv-banner-dot { background: #9A8F7C; }
+
+  .tcv-formula {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: rgba(251,243,231,0.6);
+    display: flex; flex-wrap: wrap; align-items: center; gap: 7px;
+    margin: 0 0 20px;
+  }
+  .tcv-formula-label { letter-spacing: 0.1em; color: rgba(251,243,231,0.4); }
+  .tcv-formula-part b { color: var(--amber); }
+
+  .tcv-criteria {
+    background: rgba(251,243,231,0.06);
+    border: 1px solid rgba(251,243,231,0.14);
+    border-radius: 12px;
+    padding: 16px 16px 14px;
+    margin: 0 0 22px;
+  }
+  .tcv-criteria-head {
+    font-family: 'Space Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 12px;
+  }
+  .tcv-criteria-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tcv-criterion { background: rgba(8,42,39,0.5); border-radius: 8px; padding: 11px 12px; }
+  .tcv-criterion-top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
+  .tcv-criterion-name { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12.5px; color: var(--paper); }
+  .tcv-criterion-weight { font-family: 'Bebas Neue', sans-serif; font-size: 20px; }
+  .tcv-criterion-weight.vw { color: var(--coral); }
+  .tcv-criterion-weight.lw { color: var(--amber); }
+  .tcv-criterion-desc { font-size: 11.5px; line-height: 1.45; color: rgba(251,243,231,0.6); }
+  @media (max-width: 380px) { .tcv-criteria-grid { grid-template-columns: 1fr; } }
+
+  .tcv-prize-row {
+    display: flex;
+    gap: 8px;
+  }
+  .tcv-prize {
+    flex: 1;
+    background: rgba(8,42,39,0.5);
+    border-radius: 8px;
+    padding: 10px 6px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+  .tcv-prize-medal {
+    font-size: 18px;
+    font-family: 'Space Mono', monospace;
+    color: rgba(251,243,231,0.55);
+  }
+  .tcv-prize-pos {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgba(251,243,231,0.5);
+  }
+  .tcv-prize-amt {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 19px;
+    color: var(--amber);
+  }
+  @media (max-width: 380px) {
+    .tcv-prize-row { flex-wrap: wrap; }
+    .tcv-prize { flex: 1 1 30%; }
+  }
+
+  /* Eligibility panel */
+  .tcv-elig {
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: 14px;
+    padding: 20px 20px 22px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.28);
+  }
+  .tcv-elig-head {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+  .tcv-elig-sub {
+    font-size: 12.5px;
+    color: #6b5d49;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .tcv-field { margin-bottom: 13px; }
+  .tcv-channel-row { display: flex; gap: 8px; }
+  .tcv-channel-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 8px;
+    border-radius: 7px;
+    border: 1.5px solid #E0D3BC;
+    background: #fff;
+    color: #6b5d49;
+    cursor: pointer;
+  }
+  .tcv-channel-btn.active {
+    border-color: var(--coral);
+    background: #FFF3F0;
+    color: var(--coral);
+  }
+  .tcv-channel-ic { font-size: 14px; }
+  .tcv-label {
+    display: block;
+    font-family: 'Space Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #8a7a63;
+    margin-bottom: 5px;
+  }
+  .tcv-input {
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 10px 12px;
+    border-radius: 7px;
+    border: 1.5px solid #E0D3BC;
+    background: #fff;
+    color: var(--ink);
+  }
+  .tcv-input:focus { outline: none; border-color: var(--coral); }
+  .tcv-input.err { border-color: var(--coral); background: #FFF3F0; }
+  .tcv-input.readonly { background: var(--paper-dim); color: #6b5d49; }
+  .tcv-field-tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 8.5px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--green);
+    background: rgba(76,154,107,0.14);
+    border: 1px solid rgba(76,154,107,0.35);
+    border-radius: 999px;
+    padding: 1px 7px;
+    margin-left: 6px;
+  }
+  .tcv-otp-row {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .tcv-otp-row .tcv-input { flex: 1; letter-spacing: 0.3em; font-family: 'Space Mono', monospace; text-align: center; }
+  .tcv-resend-btn {
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--coral);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+  }
+  .tcv-resend-btn:disabled { color: #8a7a63; cursor: default; text-decoration: none; }
+  .tcv-otp-note {
+    font-size: 11px;
+    color: #8a7a63;
+    margin: 6px 0 14px;
+    line-height: 1.4;
+  }
+  .tcv-otp-note code {
+    background: var(--paper-dim);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: 'Space Mono', monospace;
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .tcv-verified-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--paper-dim);
+    border-radius: 8px;
+    padding: 9px 12px;
+    margin-bottom: 13px;
+    font-size: 12px;
+  }
+  .tcv-verified-summary .name { font-weight: 700; color: var(--ink); }
+  .tcv-verified-summary .meta { color: #8a7a63; font-family: 'Space Mono', monospace; font-size: 10.5px; }
+  .tcv-change-link {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: var(--coral);
+    background: none;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+  }
+  .tcv-check-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    margin-bottom: 11px;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: #3a3327;
+  }
+  .tcv-check-row input { margin-top: 2px; width: 15px; height: 15px; accent-color: var(--coral); flex-shrink: 0; }
+  .tcv-captcha-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--paper-dim);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+  }
+  .tcv-captcha-q {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+  .tcv-captcha-row .tcv-input { flex: 1; }
+  .tcv-elig-error {
+    font-size: 12px;
+    color: var(--coral);
+    font-weight: 600;
+    margin: -4px 0 12px;
+    display: none;
+  }
+  .tcv-elig-error.show { display: block; }
+  .tcv-submit {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.03em;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: var(--coral);
+    color: var(--paper);
+    cursor: pointer;
+  }
+  .tcv-submit:hover { background: #cc4632; }
+
+  .tcv-state-note {
+    background: rgba(251,243,231,0.07);
+    border: 1px dashed rgba(251,243,231,0.25);
+    border-radius: 10px;
+    padding: 16px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: rgba(251,243,231,0.75);
+    margin-bottom: 22px;
+  }
+  .tcv-state-note b { color: var(--amber); }
+
+  .tcv-list { display: flex; flex-direction: column; gap: 14px; }
+
+  .tcv-ticket {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 108px;
+    background: var(--paper);
+    border-radius: 10px;
+    overflow: visible;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.28);
+    transition: transform 0.15s ease;
+  }
+  .tcv-ticket:hover { transform: translateY(-2px); }
+  .tcv-ticket.tcv-locked { opacity: 0.55; }
+
+  .tcv-main {
+    padding: 16px 18px 16px 20px;
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+  .tcv-num { font-family: 'Space Mono', monospace; font-size: 11px; color: #8a7a63; letter-spacing: 0.08em; }
+  .tcv-name { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 0.01em; line-height: 1.05; }
+  .tcv-bar-track { height: 8px; background: var(--paper-dim); border-radius: 4px; overflow: hidden; margin-top: 2px; display: flex; }
+  .tcv-bar-votes { height: 100%; background: var(--coral); width: 0%; transition: width 0.5s cubic-bezier(.2,.8,.2,1); }
+  .tcv-bar-loyalty { height: 100%; background: var(--amber); width: 0%; transition: width 0.5s cubic-bezier(.2,.8,.2,1); }
+  .tcv-bar-track.tcv-hidden-bar { background: repeating-linear-gradient(45deg, var(--paper-dim), var(--paper-dim) 4px, #E4D7C0 4px, #E4D7C0 8px); }
+  .tcv-score-row { display: flex; justify-content: space-between; align-items: baseline; margin-top: 1px; }
+  .tcv-score-legend { font-family: 'Space Mono', monospace; font-size: 10px; color: #8a7a63; display: flex; gap: 10px; }
+  .tcv-score-legend span::before { content: "\25CF"; margin-right: 4px; font-size: 8px; }
+  .tcv-score-legend .lv::before { color: var(--coral); }
+  .tcv-score-legend .ll::before { color: var(--amber); }
+  .tcv-score-total { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--ink); }
+  .tcv-score-total span { font-family: 'Space Mono', monospace; font-size: 10px; color: #8a7a63; margin-left: 3px; }
+  .tcv-score-total.tcv-locked-score { font-size: 13px; color: #8a7a63; font-family: 'Space Mono', monospace; }
+
+  .tcv-stub {
+    position: relative;
+    background: var(--teal-deep);
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 0 10px 10px 0;
+  }
+  .tcv-stub::after {
+    content: "";
+    position: absolute; left: -7px; top: -7px; width: 14px; height: 14px;
+    background: radial-gradient(circle, #0A302C 62%, transparent 63%);
+    border-radius: 50%;
+  }
+  .tcv-punch-bottom { position: absolute; left: -7px; bottom: -7px; width: 14px; height: 14px; background: radial-gradient(circle, #0A302C 62%, transparent 63%); border-radius: 50%; }
+
+  .tcv-vote-btn {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 17px;
+    letter-spacing: 0.05em;
+    color: var(--paper);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 10px 6px;
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  }
+  .tcv-vote-btn:focus-visible { outline: 2px solid var(--amber); outline-offset: -3px; }
+  .tcv-vote-btn .tcv-ic { font-size: 18px; }
+  .tcv-vote-btn.voted { color: var(--amber); }
+  .tcv-vote-btn:disabled { cursor: default; opacity: 0.45; }
+  .tcv-vote-btn:not(:disabled):hover { color: var(--amber); }
+
+  .tcv-rank-badge {
+    position: absolute; top: -9px; left: 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+    padding: 3px 9px; border-radius: 999px;
+    color: var(--teal-deep); background: var(--amber);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  .tcv-rank-badge.gold { background: #F0A63D; }
+  .tcv-rank-badge.silver { background: #CFCFCF; }
+  .tcv-rank-badge.bronze { background: #C98A54; }
+  .tcv-rank-badge.teal { background: var(--green); color: var(--paper); }
+
+  .tcv-footer {
+    margin-top: 30px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(251,243,231,0.14);
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+  }
+  .tcv-footer-note { font-family: 'Space Mono', monospace; font-size: 10.5px; color: rgba(251,243,231,0.5); letter-spacing: 0.03em; }
+  .tcv-footer-note2 { font-family: 'Inter', sans-serif; font-size: 10.5px; color: rgba(251,243,231,0.35); }
+
+  .tcv-toast {
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    color: var(--teal-deep);
+    background: var(--amber);
+    padding: 9px 14px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    display: none;
+    font-weight: 600;
+  }
+  .tcv-toast.show { display: block; }
+
+  @media (max-width: 420px) {
+    .tcv-title { font-size: 40px; }
+    .tcv-ticket { grid-template-columns: 1fr 84px; }
+    .tcv-name { font-size: 20px; }
+  }
+</style>
+
+<div class="campaign-page-wrap">
+
+<div id="campaign-root">
+  <div class="cb-grid">
+    <div class="cb-left">
+      <div class="cb-seal">
+        <svg viewBox="0 0 64 64" fill="none">
+          <circle cx="32" cy="32" r="30" stroke="#0B2544" stroke-width="1.6"/>
+          <path d="M18 42c4-3 9-4.5 14-4.5s10 1.5 14 4.5" stroke="#C9902E" stroke-width="1.4" fill="none"/>
+          <path d="M32 18L50 25L32 32L14 25Z" fill="#0B2544"/>
+          <path d="M22 27.5V34c0 2.5 4.5 5 10 5s10-2.5 10-5v-6.5" stroke="#0B2544" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          <path d="M50 25v8" stroke="#0B2544" stroke-width="1.6" stroke-linecap="round"/>
+          <circle cx="50" cy="35" r="1.6" fill="#0B2544"/>
+        </svg>
+        <div>
+          <div class="cb-seal-name">UNIVERSITY CAFETERIA</div>
+          <div class="cb-seal-tag">Great Food, Great Experience!</div>
+        </div>
+      </div>
+
+      <h1 class="cb-headline">
+        TOP CUSTOMER<br>
+        <span class="vote-word">V<span class="cb-check-o"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#0B2544" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>TE!</span>
+      </h1>
+
+      <div class="cb-ribbon-wrap">
+        <div class="cb-ribbon">YOU ENJOY, THEY <b>DESERVE!</b></div>
+      </div>
+
+      <p class="cb-sub">Vote for your favorite customer and help us appreciate their <b>loyalty</b> and <b>support</b>.</p>
+
+      <div class="cb-features">
+        <div class="cb-feature">
+          <div class="cb-feature-ic"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="#F0A91A" stroke-width="1.6"/><path d="M3 20c0-3.9 2.7-6 6-6s6 2.1 6 6" stroke="#F0A91A" stroke-width="1.6" stroke-linecap="round"/><path d="M17 13.5c1.7.5 3 1.9 3 4.2" stroke="#F0A91A" stroke-width="1.6" stroke-linecap="round"/><path d="M16 5.2c.9.4 1.5 1.2 1.5 2.4 0 1.4-.9 2.2-1.8 2.6" stroke="#F0A91A" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+          <div class="cb-feature-label">Appreciate Loyal Customers</div>
+        </div>
+        <div class="cb-divider"></div>
+        <div class="cb-feature">
+          <div class="cb-feature-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M8 4h8v4a4 4 0 01-8 0V4z" stroke="#F0A91A" stroke-width="1.6"/><path d="M8 5H5v1a3 3 0 003 3M16 5h3v1a3 3 0 01-3 3" stroke="#F0A91A" stroke-width="1.6" stroke-linecap="round"/><path d="M12 12v4M9 20h6M10 16h4v2a2 2 0 01-2 2 2 2 0 01-2-2v-2z" stroke="#F0A91A" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+          <div class="cb-feature-label">Exciting Prizes For Top 5</div>
+        </div>
+        <div class="cb-divider"></div>
+        <div class="cb-feature">
+          <div class="cb-feature-ic"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="9" r="2.6" stroke="#F0A91A" stroke-width="1.6"/><circle cx="16" cy="10" r="2.2" stroke="#F0A91A" stroke-width="1.6"/><path d="M4 19c0-3 2.2-5 5-5s5 2 5 5" stroke="#F0A91A" stroke-width="1.6" stroke-linecap="round"/><path d="M14.5 14.5c2.2.3 3.5 1.9 3.5 4.5" stroke="#F0A91A" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+          <div class="cb-feature-label">Stronger Community Together</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cb-right">
+      <div class="cb-bokeh">
+        <span style="width:60px;height:60px;top:20px;left:60%;"></span>
+        <span style="width:34px;height:34px;top:70px;left:75%;"></span>
+        <span style="width:80px;height:80px;top:10px;left:20%;"></span>
+        <span style="width:26px;height:26px;top:100px;left:45%;"></span>
+      </div>
+
+      <!-- Illustrated placeholder standing in for real food photography.
+           Swap this whole .cb-plate-scene block for an <img> of your own
+           cafeteria photo — see the comment below. -->
+      <svg class="cb-plate-scene" viewBox="0 0 400 260" preserveAspectRatio="xMidYMax meet" style="width:100%;">
+        <ellipse cx="230" cy="235" rx="150" ry="20" fill="#000" opacity="0.18"/>
+        <circle cx="230" cy="205" r="118" fill="#FBF3E7"/>
+        <circle cx="230" cy="205" r="102" fill="#F3E7D2"/>
+        <!-- rice mound -->
+        <ellipse cx="185" cy="195" rx="52" ry="34" fill="#FBFAF5"/>
+        <path d="M155 185c6-3 12-4 18-3M165 205c8-2 16-2 22 1M180 178c6-2 13-2 18 0" stroke="#E4DCC5" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- grilled protein -->
+        <ellipse cx="278" cy="200" rx="58" ry="32" fill="#B5651D"/>
+        <ellipse cx="278" cy="196" rx="50" ry="25" fill="#D97F30"/>
+        <path d="M250 190c10-6 24-8 36-4M255 205c12-4 26-4 34 1" stroke="#8A4A16" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- tomato slices -->
+        <circle cx="322" cy="178" r="11" fill="#C0392B"/>
+        <circle cx="322" cy="178" r="6" fill="#E0574A"/>
+        <circle cx="335" cy="192" r="11" fill="#C0392B"/>
+        <circle cx="335" cy="192" r="6" fill="#E0574A"/>
+        <!-- cucumber / greens -->
+        <path d="M128 195c7-5 16-6 22 1M120 212c9-4 19-3 25 2" stroke="#4C9A6B" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <ellipse cx="150" cy="230" rx="10" ry="5" fill="#7FB88A"/>
+        <ellipse cx="168" cy="234" rx="10" ry="5" fill="#7FB88A"/>
+      </svg>
+      <!-- <img src="your-cafeteria-photo.jpg" class="cb-plate-scene" style="width:100%;height:100%;object-fit:cover;"> -->
+
+      <div class="cb-medal">
+        <svg viewBox="0 0 168 168" fill="none">
+          <circle cx="84" cy="70" r="58" fill="#F0A91A"/>
+          <circle cx="84" cy="70" r="58" fill="url(#medalShine)"/>
+          <circle cx="84" cy="70" r="50" fill="none" stroke="#C9902E" stroke-width="1.5"/>
+          <path d="M60 88l-4 14 8-3 6 7 4-14M108 88l4 14-8-3-6 7-4-14" stroke="#C9902E" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+          <path d="M68 52h32v8a16 16 0 01-32 0v-8z" fill="#0B2544"/>
+          <path d="M68 54h-8v3a10 10 0 008 8M100 54h8v3a10 10 0 01-8 8" stroke="#0B2544" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+          <rect x="76" y="72" width="16" height="14" fill="#0B2544"/>
+          <rect x="20" y="98" width="128" height="30" rx="2" fill="#0B2544"/>
+          <path d="M20 98l-12 15 12 15zM148 98l12 15-12 15z" fill="#08132B"/>
+          <text x="84" y="112" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="12" fill="#FFFFFF">TOP 5 WINNERS</text>
+          <text x="84" y="124" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" font-size="9" fill="#F0A91A">WILL BE REWARDED</text>
+          <defs>
+            <radialGradient id="medalShine" cx="35%" cy="30%" r="70%">
+              <stop offset="0%" stop-color="#FFE9B0" stop-opacity="0.7"/>
+              <stop offset="100%" stop-color="#F0A91A" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <div class="cb-vote-now">
+        <svg viewBox="0 0 138 168" fill="none">
+          <circle cx="69" cy="66" r="62" fill="#4C9A6B" stroke="#FFFFFF" stroke-width="4"/>
+          <circle cx="69" cy="40" r="15" fill="none" stroke="#FFFFFF" stroke-width="2.4"/>
+          <path d="M62 40l5 5 9-10" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M50 66c4-8 12-10 19-10s15 2 19 10l-4 14H54z" fill="#FFFFFF"/>
+          <rect x="60" y="52" width="18" height="16" rx="3" fill="#FFFFFF"/>
+          <text x="69" y="92" text-anchor="middle" font-family="'Bebas Neue', sans-serif" font-size="19" fill="#FFFFFF" letter-spacing="1">VOTE</text>
+          <text x="69" y="110" text-anchor="middle" font-family="'Bebas Neue', sans-serif" font-size="19" fill="#FFFFFF" letter-spacing="1">NOW!</text>
+          <g transform="translate(9,130)">
+            <path d="M0 8 L10 0 L110 0 L120 8 L110 16 L10 16 Z" fill="#F0A91A"/>
+            <text x="60" y="7" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="7.5" fill="#0B2544">YOUR VOTE</text>
+            <text x="60" y="14" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="7.5" fill="#0B2544">MAKES A DIFFERENCE!</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="cb-footer">
+    <div class="cb-footer-item">
+      <div class="cb-footer-ic"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="16" rx="2" stroke="#F0A91A" stroke-width="1.6"/><path d="M4 10h16M8 3v4M16 3v4" stroke="#F0A91A" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+      <div>
+        <div class="cb-footer-label">Voting Period</div>
+        <div class="cb-footer-value">6 &ndash; 20 August 2026</div>
+      </div>
+    </div>
+    <div class="cb-footer-item">
+      <div class="cb-footer-ic"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="9" width="14" height="11" rx="1.5" stroke="#F0A91A" stroke-width="1.6"/><path d="M5 13h14M12 9v11" stroke="#F0A91A" stroke-width="1.6"/><path d="M12 9c-2 0-3-1-3-2.5S10 4 12 6c0-2 1-3 2.5-2S15 6 13 9" stroke="#F0A91A" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+      <div>
+        <div class="cb-footer-label">Top 5 Winners</div>
+        <div class="cb-footer-value">Will Receive Amazing Prizes!</div>
+      </div>
+    </div>
+    <div class="cb-footer-note">Thank you for being<br>a valued part of our community! &#9825;</div>
+  </div>
+</div>
+<div class="campaign-divider"></div>
+
+<div id="tcv-root">
+  <div class="tcv-brand-banner">
+    <div class="tcv-brand-name">
+      <span class="tcv-brand-ic">&#127860;</span>
+      <span>University Cafeteria And Snack Bar</span>
+      <span class="tcv-brand-ic">&#127860;</span>
+    </div>
+    <div class="tcv-brand-tagline">Est. on campus &middot; Serving students daily</div>
+  </div>
+  <div class="tcv-scallop"></div>
+  <div class="tcv-body">
+  <div class="tcv-wrap">
+    <div id="tcv-progress-wrap"></div>
+    <div class="tcv-eyebrow">Semester Contest &middot; Jan&ndash;May 2026</div>
+    <h1 class="tcv-title">Top Customer<br><span>Vote</span></h1>
+    <p class="tcv-sub">Five finalists, picked from this semester's most loyal cafeteria customers &mdash; first names only, full identity kept private. Every finalist wins a prize, ranked by <b style="color:var(--amber)">weighted score</b>.</p>
+
+    <div class="tcv-rules">
+      <div class="tcv-chip"><b>5</b> finalists</div>
+      <div class="tcv-chip"><b>5</b> prizes</div>
+      <div class="tcv-chip"><b>1</b> vote per account</div>
+      <div class="tcv-chip">&#128065;&#65039; First names only</div>
+    </div>
+
+    <div id="tcv-banner" class="tcv-banner"></div>
+
+    <div class="tcv-formula">
+      <span class="tcv-formula-label">SCORE</span>
+      <span>=</span>
+      <span class="tcv-formula-part"><b>60%</b> votes</span>
+      <span>+</span>
+      <span class="tcv-formula-part"><b>40%</b> semester spend</span>
+    </div>
+
+    <div class="tcv-criteria">
+      <div class="tcv-criteria-head">Voting criteria</div>
+      <div class="tcv-criteria-grid">
+        <div class="tcv-criterion">
+          <div class="tcv-criterion-top">
+            <span class="tcv-criterion-name">Community Vote</span>
+            <span class="tcv-criterion-weight vw">60%</span>
+          </div>
+          <div class="tcv-criterion-desc">Your pick &mdash; one vote per verified customer account.</div>
+        </div>
+        <div class="tcv-criterion">
+          <div class="tcv-criterion-top">
+            <span class="tcv-criterion-name">Semester Loyalty</span>
+            <span class="tcv-criterion-weight lw">40%</span>
+          </div>
+          <div class="tcv-criterion-desc">Total cafeteria spend, Jan&ndash;May 2026, from real payment records.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tcv-criteria">
+      <div class="tcv-criteria-head">Prize structure &mdash; every finalist wins</div>
+      <div class="tcv-prize-row">
+        <div class="tcv-prize"><span class="tcv-prize-medal">&#129351;</span><span class="tcv-prize-pos">1st</span><span class="tcv-prize-amt">$40</span></div>
+        <div class="tcv-prize"><span class="tcv-prize-medal">&#129352;</span><span class="tcv-prize-pos">2nd</span><span class="tcv-prize-amt">$25</span></div>
+        <div class="tcv-prize"><span class="tcv-prize-medal">&#129353;</span><span class="tcv-prize-pos">3rd</span><span class="tcv-prize-amt">$15</span></div>
+        <div class="tcv-prize"><span class="tcv-prize-medal">4th</span><span class="tcv-prize-pos">Finalist</span><span class="tcv-prize-amt">$10</span></div>
+        <div class="tcv-prize"><span class="tcv-prize-medal">5th</span><span class="tcv-prize-pos">Finalist</span><span class="tcv-prize-amt">$10</span></div>
+      </div>
+    </div>
+
+    <div id="tcv-toast" class="tcv-toast"></div>
+
+    <div id="tcv-elig-wrap"></div>
+    <div id="tcv-state-note-wrap"></div>
+
+    <div id="tcv-list" class="tcv-list"></div>
+
+    <div class="tcv-footer">
+      <span class="tcv-footer-note" id="tcv-total"></span>
+      <span class="tcv-footer-note2" id="tcv-footer-right"></span>
+    </div>
+  </div>
+  </div>
+</div>
+</div>
+
+<script>
+(function() {
+  // =====================================================================
+  // SET THIS to your deployed backend's URL (see the /vote-backend folder).
+  // Empty string means "same origin as this page" — fine if you serve this
+  // HTML from the same Express app, otherwise point it at your API host.
+  // =====================================================================
+  var API_BASE_URL = "http://localhost:4000";
+
+  var PRIZES = ["$40", "$25", "$15", "$10", "$10"];
+  var RANK_MEDALS = ["\uD83E\uDD47", "\uD83E\uDD48", "\uD83E\uDD49", "4TH", "5TH"];
+
+  var NOMINEES = [];          // loaded from GET /api/config
+  var VOTING_START = null;
+  var VOTING_END = null;
+  var serverStatus = "before";
+
+  var listEl = document.getElementById("tcv-list");
+  var totalEl = document.getElementById("tcv-total");
+  var footerRightEl = document.getElementById("tcv-footer-right");
+  var toastEl = document.getElementById("tcv-toast");
+  var bannerEl = document.getElementById("tcv-banner");
+  var progressWrapEl = document.getElementById("tcv-progress-wrap");
+  var eligWrapEl = document.getElementById("tcv-elig-wrap");
+  var stateNoteWrapEl = document.getElementById("tcv-state-note-wrap");
+
+  // Session state for the voter currently at this browser (in-memory only —
+  // nothing about "am I verified" or "did I vote" is trusted from the client;
+  // the server is the source of truth on every request).
+  var sessionToken = null;    // issued by /api/session/create, required by /api/vote
+  var votedThisSession = false;
+  var lastResults = { status: "before", totalVotes: 0, participating: [], results: null };
+
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function() { toastEl.classList.remove("show"); }, 3200);
+  }
+
+  async function api(path, opts) {
+    var res = await fetch(API_BASE_URL + path, Object.assign({
+      headers: { "Content-Type": "application/json" },
+    }, opts || {}));
+    var data = null;
+    try { data = await res.json(); } catch (e) { /* empty body */ }
+    if (!res.ok) {
+      var err = new Error((data && data.error) || ("HTTP " + res.status));
+      err.code = data && data.error;
+      err.status = res.status;
+      throw err;
+    }
+    return data;
+  }
+
+  function fmtDate(d) {
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) +
+      " " + d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function daysHoursLeft(target, now) {
+    var ms = Math.max(0, target - now);
+    var days = Math.floor(ms / 86400000);
+    var hours = Math.floor((ms % 86400000) / 3600000);
+    if (days > 0) return days + "d " + hours + "h";
+    var mins = Math.floor((ms % 3600000) / 60000);
+    return hours + "h " + mins + "m";
+  }
+
+  function scoreOf(n, counts) {
+    var maxVotes = Math.max.apply(null, NOMINEES.map(function(x) { return counts[x.id] || 0; }).concat([0]));
+    var normVotes = maxVotes > 0 ? (counts[n.id] || 0) / maxVotes : 0;
+    // Spend never reaches the browser — while voting is open we can only show
+    // vote-driven movement; the server computes the real blended score and
+    // sends the final ranking once results are published.
+    return { voteContribution: normVotes * 60, loyaltyContribution: 0, score: normVotes * 60 };
+  }
+
+  function renderBanner(status) {
+    bannerEl.className = "tcv-banner " + status;
+    var html = '<span><span class="tcv-banner-dot"></span>';
+    if (status === "before") html += "Voting opens " + fmtDate(VOTING_START) + "</span>";
+    else if (status === "open") html += "Voting is open &mdash; closes " + fmtDate(VOTING_END) + "</span>";
+    else html += "Voting closed " + fmtDate(VOTING_END) + " &mdash; results below</span>";
+    if (status === "open") html += "<span>" + fmtDate(VOTING_START) + " &rarr; " + fmtDate(VOTING_END) + "</span>";
+    bannerEl.innerHTML = html;
+  }
+
+  function renderProgress(status, totalVotes, participatingIds) {
+    var now = new Date();
+    var pct, rightLabel;
+    if (status === "before") {
+      pct = 0;
+      rightLabel = "Opens in " + daysHoursLeft(VOTING_START, now);
+    } else if (status === "closed") {
+      pct = 100;
+      rightLabel = "Voting ended";
+    } else {
+      var span = VOTING_END - VOTING_START;
+      var elapsed = now - VOTING_START;
+      pct = span > 0 ? Math.min(100, Math.max(0, (elapsed / span) * 100)) : 0;
+      rightLabel = daysHoursLeft(VOTING_END, now) + " left";
+    }
+
+    var participating = participatingIds.length;
+    var revealCounts = status === "closed";
+    var countsById = {};
+    if (revealCounts && lastResults.results) {
+      lastResults.results.forEach(function(r) { countsById[r.id] = r.votes; });
+    }
+
+    var segsHtml = NOMINEES.map(function(n, idx) {
+      var hasVotes = participatingIds.indexOf(n.id) !== -1;
+      return '<div class="tcv-finalist-seg' + (hasVotes ? ' has-votes' : '') + '">' +
+        '<div class="tcv-finalist-seg-bar"></div>' +
+        '<div class="tcv-finalist-seg-num">' + (revealCounts ? (countsById[n.id] || 0) : (idx + 1)) + '</div>' +
+      '</div>';
+    }).join("");
+
+    progressWrapEl.innerHTML =
+      '<div class="tcv-progress">' +
+        '<div class="tcv-progress-top">' +
+          '<span class="tcv-progress-label">Voting Progress</span>' +
+          '<span class="tcv-progress-pct">' + Math.round(pct) + '%</span>' +
+        '</div>' +
+        '<div class="tcv-progress-track"><div class="tcv-progress-fill" style="width:' + pct.toFixed(1) + '%"></div></div>' +
+        '<div class="tcv-progress-bottom">' +
+          '<span><b>' + totalVotes + '</b> vote' + (totalVotes === 1 ? '' : 's') + ' cast so far</span>' +
+          '<span>' + rightLabel + '</span>' +
+        '</div>' +
+        '<div class="tcv-progress-divider"></div>' +
+        '<div class="tcv-finalist-head">' +
+          '<span class="tcv-finalist-label">Finalist activity</span>' +
+          '<span class="tcv-finalist-count">' + participating + ' of ' + NOMINEES.length + ' have votes</span>' +
+        '</div>' +
+        '<div class="tcv-finalist-segs">' + segsHtml + '</div>' +
+      '</div>';
+  }
+
+  // ---- Eligibility / OTP flow — Student ID + mobile checked against your
+  // real DB, then a real 6-digit code is generated and delivered by
+  // WhatsApp. Both the send and the check happen on the backend — this
+  // page just calls the two endpoints. ----
+  var otpStage = "enter";   // "enter" -> "sent"
+  var otpStudentId = "", otpMobile = "", otpFullName = null;
+  var otpChannel = "whatsapp";  // "whatsapp" | "sms"
+  var chkState = { account: false, age: false, staff: false };
+  var otpResendAt = 0;
+
+  function renderEligibilityForm() {
+    if (otpStage === "enter") {
+      eligWrapEl.innerHTML =
+        '<div class="tcv-elig">' +
+          '<div class="tcv-elig-head">Verify to vote</div>' +
+          '<div class="tcv-elig-sub">Enter your Student ID and mobile number, and choose how you\'d like to receive your one-time code.</div>' +
+          '<div class="tcv-field">' +
+            '<label class="tcv-label">Student ID</label>' +
+            '<input type="text" class="tcv-input" id="tcv-sid-input" placeholder="e.g. UCS-2024-00187">' +
+          '</div>' +
+          '<div class="tcv-field">' +
+            '<label class="tcv-label">Mobile Number</label>' +
+            '<input type="text" class="tcv-input" id="tcv-acc-input" placeholder="e.g. 25263xxxxxxx">' +
+          '</div>' +
+          '<div class="tcv-field">' +
+            '<label class="tcv-label">Send code via</label>' +
+            '<div class="tcv-channel-row">' +
+              '<button type="button" class="tcv-channel-btn' + (otpChannel === "whatsapp" ? " active" : "") + '" data-channel="whatsapp">' +
+                '<span class="tcv-channel-ic">&#128172;</span> WhatsApp' +
+              '</button>' +
+              '<button type="button" class="tcv-channel-btn' + (otpChannel === "sms" ? " active" : "") + '" data-channel="sms">' +
+                '<span class="tcv-channel-ic">&#9993;</span> SMS' +
+              '</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="tcv-elig-error" id="tcv-elig-error"></div>' +
+          '<button class="tcv-submit" id="tcv-send-otp">Send OTP via ' + (otpChannel === "sms" ? "SMS" : "WhatsApp") + '</button>' +
+        '</div>';
+      document.getElementById("tcv-send-otp").addEventListener("click", onSendOtp);
+      eligWrapEl.querySelectorAll(".tcv-channel-btn").forEach(function(btn) {
+        btn.addEventListener("click", function() {
+          otpChannel = btn.getAttribute("data-channel");
+          renderEligibilityForm();
+        });
+      });
+    } else {
+      var maskedMobile = otpMobile.length > 4 ? otpMobile.slice(0, -4).replace(/./g, "\u2022") + otpMobile.slice(-4) : otpMobile;
+      eligWrapEl.innerHTML =
+        '<div class="tcv-elig">' +
+          '<div class="tcv-elig-head">Verify to vote</div>' +
+          '<div class="tcv-elig-sub">We check a few things before your vote counts &mdash; this keeps the contest fair for every real student.</div>' +
+          '<div class="tcv-verified-summary">' +
+            '<div><div class="name">' + otpFullName + '<span class="tcv-field-tag">From database</span></div>' +
+            '<div class="meta">ID ' + otpStudentId + ' &middot; ' + maskedMobile + '</div></div>' +
+            '<button class="tcv-change-link" id="tcv-otp-change">Change</button>' +
+          '</div>' +
+          '<div class="tcv-field">' +
+            '<label class="tcv-label">OTP Code</label>' +
+            '<div class="tcv-otp-row">' +
+              '<input type="text" inputmode="numeric" maxlength="6" class="tcv-input" id="tcv-otp-input" placeholder="6-digit code">' +
+              '<button class="tcv-resend-btn" id="tcv-otp-resend">Resend</button>' +
+            '</div>' +
+            '<div class="tcv-otp-note">Sent by ' + (otpChannel === "sms" ? "SMS" : "WhatsApp") + ' to the number above. It expires a few minutes after sending.</div>' +
+          '</div>' +
+          '<div class="tcv-check-row"><input type="checkbox" id="tcv-chk-account"><span>I have a registered customer account and made at least one purchase this semester.</span></div>' +
+          '<div class="tcv-check-row"><input type="checkbox" id="tcv-chk-age"><span>I am 18 years of age or older.</span></div>' +
+          '<div class="tcv-check-row"><input type="checkbox" id="tcv-chk-staff"><span>I am not an employee, administrator, or organizer of this contest.</span></div>' +
+          '<div class="tcv-elig-error" id="tcv-elig-error"></div>' +
+          '<button class="tcv-submit" id="tcv-elig-submit">Verify &amp; continue</button>' +
+        '</div>';
+      document.getElementById("tcv-otp-change").addEventListener("click", function() {
+        otpStage = "enter";
+        renderEligibilityForm();
+      });
+      document.getElementById("tcv-otp-resend").addEventListener("click", onResendOtp);
+      document.getElementById("tcv-elig-submit").addEventListener("click", onEligibilitySubmit);
+      updateResendState();
+    }
+  }
+
+  function updateResendState() {
+    var btn = document.getElementById("tcv-otp-resend");
+    if (!btn) return;
+    var msLeft = otpResendAt - Date.now();
+    if (msLeft > 0) {
+      btn.disabled = true;
+      btn.textContent = "Resend in " + Math.ceil(msLeft / 1000) + "s";
+      setTimeout(updateResendState, 500);
+    } else {
+      btn.disabled = false;
+      btn.textContent = "Resend";
+    }
+  }
+
+  async function requestOtp(showErrorsOn) {
+    var errEl = document.getElementById("tcv-elig-error");
+    try {
+      var data = await api("/api/otp/send", {
+        method: "POST",
+        body: JSON.stringify({ studentId: otpStudentId, mobile: otpMobile, channel: otpChannel }),
+      });
+      otpFullName = data.fullName;
+      otpResendAt = Date.now() + 30000;
+      showToast("OTP sent via " + (otpChannel === "sms" ? "SMS" : "WhatsApp") + " to " + otpMobile + ".");
+      return true;
+    } catch (err) {
+      var msg = {
+        student_not_found: "No customer account found for that Student ID.",
+        mobile_mismatch: "That mobile number doesn't match this Student ID on file.",
+        whatsapp_failed: "We couldn't send the WhatsApp message right now — try again, or switch to SMS.",
+        sms_failed: "We couldn't send the SMS right now — try again, or switch to WhatsApp.",
+        missing_fields: "Enter both your Student ID and mobile number.",
+      }[err.code] || "Something went wrong sending the OTP. Try again.";
+      if (errEl) { errEl.textContent = msg; errEl.classList.add("show"); }
+      if (showErrorsOn) showErrorsOn.classList.add("err");
+      return false;
+    }
+  }
+
+  async function onResendOtp() {
+    if (Date.now() < otpResendAt) return;
+    var btn = document.getElementById("tcv-otp-resend");
+    btn.disabled = true;
+    btn.textContent = "Sending\u2026";
+    await requestOtp();
+    renderEligibilityForm();
+  }
+
+  async function onSendOtp() {
+    var sidInput = document.getElementById("tcv-sid-input").value.trim();
+    var accInput = document.getElementById("tcv-acc-input").value.trim();
+    var errEl = document.getElementById("tcv-elig-error");
+    var sidEl = document.getElementById("tcv-sid-input");
+    var accEl = document.getElementById("tcv-acc-input");
+    var btn = document.getElementById("tcv-send-otp");
+    sidEl.classList.remove("err");
+    accEl.classList.remove("err");
+    errEl.classList.remove("show");
+
+    if (sidInput.length < 4) {
+      errEl.textContent = "Enter the Student ID on your customer account.";
+      errEl.classList.add("show");
+      sidEl.classList.add("err");
+      return;
+    }
+    if (accInput.length < 6) {
+      errEl.textContent = "Enter the mobile number on your customer account.";
+      errEl.classList.add("show");
+      accEl.classList.add("err");
+      return;
+    }
+
+    otpStudentId = sidInput.toUpperCase();
+    otpMobile = accInput;
+    btn.disabled = true;
+    btn.textContent = "Sending OTP\u2026";
+    var ok = await requestOtp(accEl);
+    if (ok) {
+      otpStage = "sent";
+      renderEligibilityForm();
+    } else {
+      btn.disabled = false;
+      btn.textContent = "Send OTP via " + (otpChannel === "sms" ? "SMS" : "WhatsApp");
+    }
+  }
+
+  async function onEligibilitySubmit() {
+    var otpInput = document.getElementById("tcv-otp-input").value.trim();
+    var chkAccount = document.getElementById("tcv-chk-account").checked;
+    var chkAge = document.getElementById("tcv-chk-age").checked;
+    var chkStaff = document.getElementById("tcv-chk-staff").checked;
+    var errEl = document.getElementById("tcv-elig-error");
+    var otpEl = document.getElementById("tcv-otp-input");
+    var btn = document.getElementById("tcv-elig-submit");
+
+    otpEl.classList.remove("err");
+    errEl.classList.remove("show");
+
+    if (!chkAccount || !chkAge || !chkStaff) {
+      errEl.textContent = "Please confirm all three eligibility checkboxes.";
+      errEl.classList.add("show");
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Verifying\u2026";
+    try {
+      var data = await api("/api/otp/verify", {
+        method: "POST",
+        body: JSON.stringify({ studentId: otpStudentId, code: otpInput }),
+      });
+      sessionToken = data.sessionToken;
+      chkState = { account: chkAccount, age: chkAge, staff: chkStaff };
+      showToast("Verified. You can cast your one vote below.");
+      await refreshResults();
+      render();
+    } catch (err) {
+      var msg = {
+        otp_incorrect: "That code doesn't match. Check WhatsApp, or resend.",
+        otp_expired: "That code expired — tap resend for a new one.",
+        too_many_attempts: "Too many wrong attempts — request a new code.",
+        no_otp_pending: "Request a new code first.",
+      }[err.code] || "Couldn't verify that code. Try again.";
+      errEl.textContent = msg;
+      errEl.classList.add("show");
+      otpEl.classList.add("err");
+      btn.disabled = false;
+      btn.textContent = "Verify & continue";
+    }
+  }
+
+  function renderStateNote(status) {
+    if (status === "before") {
+      stateNoteWrapEl.innerHTML = '<div class="tcv-state-note">Voting hasn\'t opened yet. Come back on <b>' + fmtDate(VOTING_START) + '</b> to cast your vote &mdash; finalists are listed below.</div>';
+    } else if (status === "closed") {
+      stateNoteWrapEl.innerHTML = '<div class="tcv-state-note">Voting closed on <b>' + fmtDate(VOTING_END) + '</b>. Results are verified and published below.</div>';
+    } else if (votedThisSession) {
+      stateNoteWrapEl.innerHTML = '<div class="tcv-state-note">Your vote is recorded and final &mdash; it can\'t be changed. Full results publish when voting closes.</div>';
+    } else {
+      stateNoteWrapEl.innerHTML = "";
+    }
+  }
+
+  async function refreshResults() {
+    try {
+      lastResults = await api("/api/results");
+    } catch (err) {
+      lastResults = { status: serverStatus, totalVotes: 0, participating: [], results: null };
+    }
+  }
+
+  function render() {
+    var status = serverStatus;
+    renderBanner(status);
+    renderProgress(status, lastResults.totalVotes || 0, lastResults.participating || []);
+
+    var showEligForm = status === "open" && !sessionToken;
+    var showResultsNumbers = status === "closed" && lastResults.results;
+    var votingActive = status === "open" && sessionToken && !votedThisSession;
+
+    eligWrapEl.innerHTML = "";
+    if (showEligForm) renderEligibilityForm();
+
+    renderStateNote(status);
+
+    var resultsById = {};
+    if (showResultsNumbers) {
+      lastResults.results.forEach(function(r) { resultsById[r.id] = r; });
+    }
+
+    listEl.innerHTML = "";
+    NOMINEES.forEach(function(n, idx) {
+      var r = resultsById[n.id];
+      var rank = r ? r.rank - 1 : -1;
+      var isVoted = votedThisSession && window.__lastVotedNomineeId === n.id;
+      var canVoteThis = votingActive;
+
+      var ticket = document.createElement("div");
+      ticket.className = "tcv-ticket" + (status !== "closed" && !canVoteThis && !isVoted ? " tcv-locked" : "");
+
+      var badgeHtml = "";
+      if (showResultsNumbers && r) {
+        var medal = RANK_MEDALS[rank];
+        var tier = rank === 0 ? "gold" : rank === 1 ? "silver" : rank === 2 ? "bronze" : "teal";
+        badgeHtml = '<div class="tcv-rank-badge ' + tier + '">' + medal + " &middot; " + r.prize + '</div>';
+      }
+
+      var barHtml, scoreHtml, legendHtml;
+      if (showResultsNumbers && r) {
+        var votePct = lastResults.totalVotes > 0 ? (r.votes / lastResults.totalVotes) * 100 : 0;
+        barHtml = '<div class="tcv-bar-track">' +
+            '<div class="tcv-bar-votes" style="width:' + Math.min(100, votePct * 1.2).toFixed(1) + '%"></div>' +
+          '</div>';
+        legendHtml = '<span class="lv">' + r.votes + (r.votes === 1 ? " vote" : " votes") + '</span><span class="ll">Loyalty</span>';
+        scoreHtml = '<div class="tcv-score-total">' + Math.round(r.score) + '<span>score</span></div>';
+      } else {
+        barHtml = '<div class="tcv-bar-track tcv-hidden-bar"></div>';
+        legendHtml = '<span class="lv">Hidden</span><span class="ll">until close</span>';
+        scoreHtml = '<div class="tcv-score-total tcv-locked-score">&mdash;</div>';
+      }
+
+      var btnLabel, btnDisabled, btnIcon;
+      if (isVoted) { btnLabel = "VOTED"; btnDisabled = true; btnIcon = "&#9733;"; }
+      else if (status === "closed") { btnLabel = "CLOSED"; btnDisabled = true; btnIcon = "&#9679;"; }
+      else if (status === "before") { btnLabel = "SOON"; btnDisabled = true; btnIcon = "&#9734;"; }
+      else if (!sessionToken) { btnLabel = "VERIFY"; btnDisabled = true; btnIcon = "&#9734;"; }
+      else if (votedThisSession) { btnLabel = "LOCKED"; btnDisabled = true; btnIcon = "&#9679;"; }
+      else { btnLabel = "VOTE"; btnDisabled = false; btnIcon = "&#9734;"; }
+
+      ticket.innerHTML =
+        badgeHtml +
+        '<div class="tcv-main">' +
+          '<div class="tcv-num">TICKET NO. 0' + (idx + 1) + '</div>' +
+          '<div class="tcv-name">' + n.firstName + '</div>' +
+          barHtml +
+          '<div class="tcv-score-row"><div class="tcv-score-legend">' + legendHtml + '</div>' + scoreHtml + '</div>' +
+        '</div>' +
+        '<div class="tcv-stub">' +
+          '<button class="tcv-vote-btn' + (isVoted ? ' voted' : '') + '" data-id="' + n.id + '"' + (btnDisabled ? ' disabled' : '') + '>' +
+            '<span class="tcv-ic">' + btnIcon + '</span><span>' + btnLabel + '</span>' +
+          '</button>' +
+          '<div class="tcv-punch-bottom"></div>' +
+        '</div>';
+
+      listEl.appendChild(ticket);
+    });
+
+    listEl.querySelectorAll(".tcv-vote-btn:not(:disabled)").forEach(function(btn) {
+      btn.addEventListener("click", function() { castVote(btn.getAttribute("data-id")); });
+    });
+
+    totalEl.textContent = (lastResults.totalVotes || 0) + ((lastResults.totalVotes || 0) === 1 ? " vote recorded" : " votes recorded");
+    footerRightEl.textContent = showResultsNumbers ? "Results verified & published" : "Results hidden until voting closes";
+  }
+
+  async function castVote(id) {
+    if (!sessionToken || votedThisSession || serverStatus !== "open") return;
+
+    var btns = listEl.querySelectorAll(".tcv-vote-btn");
+    btns.forEach(function(b) { b.disabled = true; });
+
+    try {
+      await api("/api/vote", {
+        method: "POST",
+        body: JSON.stringify({
+          sessionToken: sessionToken,
+          nomineeId: id,
+          hasAccountConfirmed: chkState.account,
+          ageConfirmed: chkState.age,
+          notStaffConfirmed: chkState.staff,
+        }),
+      });
+      votedThisSession = true;
+      window.__lastVotedNomineeId = id;
+      var idx = NOMINEES.findIndex(function(n) { return n.id === id; });
+      showToast("Vote recorded for " + NOMINEES[idx].firstName + ". Your vote is final.");
+      await refreshResults();
+      render();
+    } catch (err) {
+      var msg = {
+        already_voted: "This account has already voted.",
+        voting_closed: "Voting has closed.",
+        voting_before: "Voting hasn't opened yet.",
+        invalid_or_expired_session: "Your verification expired — please verify again.",
+      }[err.code] || "Couldn't record your vote — try again.";
+      showToast(msg);
+      if (err.code === "invalid_or_expired_session") {
+        sessionToken = null;
+        otpStage = "enter";
+      }
+      render();
+    }
+  }
+
+  async function init() {
+    try {
+      var cfg = await api("/api/config");
+      NOMINEES = cfg.nominees;
+      VOTING_START = new Date(cfg.votingStart);
+      VOTING_END = new Date(cfg.votingEnd);
+      serverStatus = cfg.status;
+    } catch (err) {
+      eligWrapEl.innerHTML =
+        '<div class="tcv-elig"><div class="tcv-elig-head">Can\'t reach the vote server</div>' +
+        '<div class="tcv-elig-sub">This app needs its backend running at <code>' + API_BASE_URL + '</code>. ' +
+        'See /vote-backend for setup — deploy it, then set API_BASE_URL at the top of this file to its real URL.</div></div>';
+      return;
+    }
+    await refreshResults();
+    render();
+  }
+
+  init();
+})();
+</script>
