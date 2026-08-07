@@ -49,6 +49,24 @@ db.exec(`
     claimed_by_student_id TEXT
   );
   CREATE INDEX IF NOT EXISTS idx_txn_mobile ON transactions(mobile);
+
+  -- Every significant thing that happens: OTP sends/verifies, registrations,
+  -- votes, and the reason for any rejection. This is what lets you actually
+  -- answer "who tried to vote, when, from where, and did it work" later —
+  -- the votes table alone only tells you about successful votes.
+  CREATE TABLE IF NOT EXISTS audit_log (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    at           TEXT NOT NULL DEFAULT (datetime('now')),
+    event_type   TEXT NOT NULL,
+    student_id   TEXT,
+    mobile       TEXT,
+    detail       TEXT,
+    ip           TEXT,
+    user_agent   TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_audit_at ON audit_log(at);
+  CREATE INDEX IF NOT EXISTS idx_audit_event ON audit_log(event_type);
+  CREATE INDEX IF NOT EXISTS idx_audit_student ON audit_log(student_id);
 `);
 
 /**
@@ -108,6 +126,40 @@ function castVote(studentId, nomineeId, ip, userAgent) {
 
 function allVotes() {
   return db.prepare('SELECT nominee_id, COUNT(*) as n FROM votes GROUP BY nominee_id').all();
+}
+
+/**
+ * Records one audit event. Mobile numbers are masked (last 4 digits only)
+ * before storage, since the log is meant for "what happened and when," not
+ * as a second copy of everyone's full phone number.
+ */
+function logEvent({ eventType, studentId, mobile, detail, ip, userAgent }) {
+  const maskedMobile = mobile && mobile.length > 4
+    ? mobile.slice(0, -4).replace(/./g, '*') + mobile.slice(-4)
+    : mobile || null;
+  db.prepare(`
+    INSERT INTO audit_log (event_type, student_id, mobile, detail, ip, user_agent)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(eventType, studentId || null, maskedMobile, detail || null, ip || null, (userAgent || '').slice(0, 200));
+}
+
+/**
+ * Read access for the admin endpoint. Supports simple filtering + paging
+ * so the log stays usable once it has thousands of rows.
+ */
+function queryAuditLog({ eventType, studentId, limit, before } = {}) {
+  const clauses = [];
+  const params = {};
+  if (eventType) { clauses.push('event_type = @eventType'); params.eventType = eventType; }
+  if (studentId) { clauses.push('student_id = @studentId'); params.studentId = studentId; }
+  if (before) { clauses.push('at < @before'); params.before = before; }
+  const where = clauses.length ? 'WHERE ' + clauses.join(' AND ') : '';
+  params.limit = Math.min(Number(limit) || 100, 500);
+  return db.prepare(`
+    SELECT * FROM audit_log ${where}
+    ORDER BY at DESC, id DESC
+    LIMIT @limit
+  `).all(params);
 }
 
 /**
@@ -171,7 +223,27 @@ function registerStudentFromTransaction(transferId, mobile) {
   return { ok: true, student: db.prepare('SELECT * FROM students WHERE student_id = ?').get(studentId) };
 }
 
+/**
+ * Directly adds a student — no transaction proof required. This is for
+ * YOU (the admin) adding someone by hand (e.g. scripts/add-student.js),
+ * not something exposed to voters — there's no public endpoint for this,
+ * unlike registerStudentFromTransaction() which voters trigger themselves.
+ */
+function adminAddStudent(fullName, mobile, purchasedThisSemester, isStaff) {
+  const existing = db.prepare('SELECT * FROM students WHERE mobile = ?').get(mobile);
+  if (existing) return { ok: false, error: 'already_registered', student: existing };
+
+  const studentId = nextStudentId();
+  db.prepare(`
+    INSERT INTO students (student_id, full_name, mobile, purchased_this_semester, is_staff)
+    VALUES (?, ?, ?, ?, ?)
+  `).run(studentId, fullName, mobile, purchasedThisSemester ? 1 : 0, isStaff ? 1 : 0);
+
+  return { ok: true, student: db.prepare('SELECT * FROM students WHERE student_id = ?').get(studentId) };
+}
+
 module.exports = {
   db, studentLookup, studentLookupByMobile, saveOtp, getOtp, bumpOtpAttempts, clearOtp,
   getVote, castVote, allVotes, findTodaysTransaction, registerStudentFromTransaction,
+  adminAddStudent, logEvent, queryAuditLog,
 };
