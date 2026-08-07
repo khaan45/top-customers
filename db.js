@@ -33,6 +33,22 @@ db.exec(`
     ip TEXT,
     user_agent TEXT
   );
+
+  -- Real cafeteria payment records. Loaded here from historical data for
+  -- testing (see scripts/import-transactions.js) — IN PRODUCTION this
+  -- should instead be a live query against your actual payment feed
+  -- (Zaad/eDahab), not a static imported table, since "today's transaction"
+  -- only means something if the data is actually current. See the note on
+  -- findTodaysTransaction() below.
+  CREATE TABLE IF NOT EXISTS transactions (
+    transfer_id  INTEGER PRIMARY KEY,
+    transfer_date TEXT NOT NULL,
+    full_name    TEXT NOT NULL,
+    mobile       TEXT NOT NULL,
+    credit       REAL,
+    claimed_by_student_id TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_txn_mobile ON transactions(mobile);
 `);
 
 /**
@@ -94,7 +110,68 @@ function allVotes() {
   return db.prepare('SELECT nominee_id, COUNT(*) as n FROM votes GROUP BY nominee_id').all();
 }
 
+/**
+ * Finds a transaction by its ID, checks it was made TODAY, and checks it
+ * hasn't already been used to register an account (otherwise the same
+ * receipt could be used to create unlimited fake voters).
+ *
+ * PRODUCTION NOTE: "today" here means today relative to whenever this
+ * historical data was imported, which will drift out of date. Swap this
+ * whole function for a live query against your real payment system —
+ * the important checks (right date, not already claimed, mobile matches)
+ * stay the same, only where the data comes from changes.
+ */
+function findTodaysTransaction(transferId, mobile) {
+  const row = db.prepare('SELECT * FROM transactions WHERE transfer_id = ?').get(transferId);
+  if (!row) return { ok: false, error: 'transaction_not_found' };
+  if (row.claimed_by_student_id) return { ok: false, error: 'transaction_already_used' };
+
+  const today = new Date().toISOString().slice(0, 10);
+  const txnDate = String(row.transfer_date).slice(0, 10);
+  if (txnDate !== today) return { ok: false, error: 'transaction_not_today' };
+
+  if (row.mobile !== mobile) return { ok: false, error: 'transaction_mobile_mismatch' };
+
+  return { ok: true, transaction: row };
+}
+
+function nextStudentId() {
+  const row = db.prepare(`
+    SELECT student_id FROM students
+    WHERE student_id LIKE 'UCS-2026-%'
+    ORDER BY CAST(SUBSTR(student_id, 10) AS INTEGER) DESC
+    LIMIT 1
+  `).get();
+  const next = row ? parseInt(row.student_id.slice(9), 10) + 1 : 1;
+  return 'UCS-2026-' + String(next).padStart(5, '0');
+}
+
+/**
+ * Registers a brand-new student from a same-day transaction. Returns the
+ * new student record. Marks the transaction as claimed so it can't be
+ * reused to mint additional accounts.
+ */
+function registerStudentFromTransaction(transferId, mobile) {
+  const check = findTodaysTransaction(transferId, mobile);
+  if (!check.ok) return check;
+
+  const existing = db.prepare('SELECT * FROM students WHERE mobile = ?').get(mobile);
+  if (existing) return { ok: false, error: 'already_registered', student: existing };
+
+  const studentId = nextStudentId();
+  const insert = db.transaction(() => {
+    db.prepare(`
+      INSERT INTO students (student_id, full_name, mobile, purchased_this_semester, is_staff)
+      VALUES (?, ?, ?, 1, 0)
+    `).run(studentId, check.transaction.full_name, mobile);
+    db.prepare('UPDATE transactions SET claimed_by_student_id = ? WHERE transfer_id = ?').run(studentId, transferId);
+  });
+  insert();
+
+  return { ok: true, student: db.prepare('SELECT * FROM students WHERE student_id = ?').get(studentId) };
+}
+
 module.exports = {
   db, studentLookup, studentLookupByMobile, saveOtp, getOtp, bumpOtpAttempts, clearOtp,
-  getVote, castVote, allVotes,
+  getVote, castVote, allVotes, findTodaysTransaction, registerStudentFromTransaction,
 };

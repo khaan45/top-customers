@@ -835,6 +835,13 @@
     cursor: pointer;
     padding: 0;
   }
+  .tcv-new-customer {
+    text-align: center;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #6b5d49;
+  }
+  .tcv-new-customer .tcv-change-link { font-size: 12px; font-weight: 600; }
   .tcv-check-row {
     display: flex;
     align-items: flex-start;
@@ -1108,6 +1115,7 @@
   var VOTING_START = null;
   var VOTING_END = null;
   var serverStatus = "before";
+  var CAMPUS = null; // { lat, lng, radiusMeters } — loaded from /api/config
 
   var listEl = document.getElementById("tcv-list");
   var totalEl = document.getElementById("tcv-total");
@@ -1143,6 +1151,7 @@
       var err = new Error((data && data.error) || ("HTTP " + res.status));
       err.code = data && data.error;
       err.status = res.status;
+      err.detail = data && data.detail;
       throw err;
     }
     return data;
@@ -1335,13 +1344,40 @@
           '</div>' +
           '<div class="tcv-elig-error" id="tcv-elig-error"></div>' +
           '<button class="tcv-submit" id="tcv-send-otp">Send OTP via ' + (otpChannel === "sms" ? "SMS" : "WhatsApp") + '</button>' +
+          '<div class="tcv-new-customer">New customer? <button type="button" class="tcv-change-link" id="tcv-go-register">Register with today\'s purchase</button></div>' +
         '</div>';
       document.getElementById("tcv-send-otp").addEventListener("click", onSendOtp);
+      document.getElementById("tcv-go-register").addEventListener("click", function() {
+        otpStage = "register";
+        renderEligibilityForm();
+      });
       eligWrapEl.querySelectorAll(".tcv-channel-btn").forEach(function(btn) {
         btn.addEventListener("click", function() {
           otpChannel = btn.getAttribute("data-channel");
           renderEligibilityForm();
         });
+      });
+    } else if (otpStage === "register") {
+      eligWrapEl.innerHTML =
+        '<div class="tcv-elig">' +
+          '<div class="tcv-elig-head">Register with today\'s purchase</div>' +
+          '<div class="tcv-elig-sub">Made a purchase today but this is your first time voting? Enter the mobile number and Transfer ID from today\'s receipt to create your account on the spot.</div>' +
+          '<div class="tcv-field">' +
+            '<label class="tcv-label">Mobile Number</label>' +
+            '<input type="text" class="tcv-input" id="tcv-reg-mobile" placeholder="e.g. 25263xxxxxxx">' +
+          '</div>' +
+          '<div class="tcv-field">' +
+            '<label class="tcv-label">Transfer ID (from today\'s receipt)</label>' +
+            '<input type="text" inputmode="numeric" class="tcv-input" id="tcv-reg-transfer" placeholder="e.g. 13770304514">' +
+          '</div>' +
+          '<div class="tcv-elig-error" id="tcv-elig-error"></div>' +
+          '<button class="tcv-submit" id="tcv-register-submit">Register &amp; send OTP</button>' +
+          '<div class="tcv-new-customer"><button type="button" class="tcv-change-link" id="tcv-back-to-enter">Back</button></div>' +
+        '</div>';
+      document.getElementById("tcv-register-submit").addEventListener("click", onRegisterSubmit);
+      document.getElementById("tcv-back-to-enter").addEventListener("click", function() {
+        otpStage = "enter";
+        renderEligibilityForm();
       });
     } else {
       var maskedMobile = otpMobile.length > 4 ? otpMobile.slice(0, -4).replace(/./g, "\u2022") + otpMobile.slice(-4) : otpMobile;
@@ -1451,6 +1487,62 @@
     } else {
       btn.disabled = false;
       btn.textContent = "Send OTP via " + (otpChannel === "sms" ? "SMS" : "WhatsApp");
+    }
+  }
+
+  async function onRegisterSubmit() {
+    var mobileInput = document.getElementById("tcv-reg-mobile").value.trim();
+    var transferInput = document.getElementById("tcv-reg-transfer").value.trim();
+    var errEl = document.getElementById("tcv-elig-error");
+    var mobileEl = document.getElementById("tcv-reg-mobile");
+    var transferEl = document.getElementById("tcv-reg-transfer");
+    var btn = document.getElementById("tcv-register-submit");
+    mobileEl.classList.remove("err");
+    transferEl.classList.remove("err");
+    errEl.classList.remove("show");
+
+    if (mobileInput.length < 6) {
+      errEl.textContent = "Enter the mobile number from today's purchase.";
+      errEl.classList.add("show");
+      mobileEl.classList.add("err");
+      return;
+    }
+    if (transferInput.length < 4) {
+      errEl.textContent = "Enter the Transfer ID from today's receipt.";
+      errEl.classList.add("show");
+      transferEl.classList.add("err");
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Registering\u2026";
+    try {
+      await api("/api/students/register", {
+        method: "POST",
+        body: JSON.stringify({ mobile: mobileInput, transferId: transferInput }),
+      });
+      showToast("Account created. Sending your OTP\u2026");
+      otpMobile = mobileInput;
+      var ok = await requestOtp();
+      if (ok) {
+        otpStage = "sent";
+        renderEligibilityForm();
+      } else {
+        otpStage = "enter";
+        renderEligibilityForm();
+      }
+    } catch (err) {
+      var msg = {
+        transaction_not_found: "That Transfer ID wasn't found. Double check today's receipt.",
+        transaction_already_used: "That Transfer ID has already been used to register an account.",
+        transaction_not_today: "That transaction isn't from today. Registration only works with today's purchase.",
+        transaction_mobile_mismatch: "That mobile number doesn't match the one on this transaction.",
+        already_registered: "This mobile number is already registered — try sending an OTP instead of registering.",
+      }[err.code] || "Couldn't register that account. Check the details and try again.";
+      errEl.textContent = msg;
+      errEl.classList.add("show");
+      btn.disabled = false;
+      btn.textContent = "Register & send OTP";
     }
   }
 
@@ -1631,11 +1723,65 @@
     footerRightEl.textContent = showResultsNumbers ? "Results verified & published" : "Results hidden until voting closes";
   }
 
+  // ---- Location: voters must be near campus. Client-side check here is
+  // just for a fast, friendly error — the server re-checks independently
+  // in /api/vote, since a client-side-only check is trivially bypassable
+  // by anyone calling the API directly. ----
+  function getBrowserLocation() {
+    return new Promise(function(resolve, reject) {
+      if (!navigator.geolocation) {
+        reject(new Error("geolocation_unsupported"));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        function(pos) {
+          resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
+        },
+        function(err) {
+          reject(err);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+      );
+    });
+  }
+
+  function distanceMeters(lat1, lng1, lat2, lng2) {
+    var R = 6371000;
+    var toRad = function(d) { return (d * Math.PI) / 180; };
+    var dLat = toRad(lat2 - lat1);
+    var dLng = toRad(lng2 - lng1);
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
   async function castVote(id) {
     if (!sessionToken || votedThisSession || serverStatus !== "open") return;
 
     var btns = listEl.querySelectorAll(".tcv-vote-btn");
     btns.forEach(function(b) { b.disabled = true; });
+
+    var loc;
+    try {
+      showToast("Checking your location\u2026");
+      loc = await getBrowserLocation();
+    } catch (err) {
+      var locMsg = err.code === 1
+        ? "Location access was denied. Enable location for this site and try again \u2014 voting is campus-only."
+        : "Couldn't get your location. Make sure location services are on and try again.";
+      showToast(locMsg);
+      btns.forEach(function(b) { b.disabled = false; });
+      return;
+    }
+
+    if (CAMPUS && CAMPUS.lat && CAMPUS.lng) {
+      var dist = distanceMeters(loc.lat, loc.lng, CAMPUS.lat, CAMPUS.lng);
+      if (dist > CAMPUS.radiusMeters) {
+        showToast("You're about " + Math.round(dist) + "m from campus \u2014 voting is only allowed within " + CAMPUS.radiusMeters + "m.");
+        btns.forEach(function(b) { b.disabled = false; });
+        return;
+      }
+    }
 
     try {
       await api("/api/vote", {
@@ -1646,6 +1792,9 @@
           hasAccountConfirmed: chkState.account,
           ageConfirmed: chkState.age,
           notStaffConfirmed: chkState.staff,
+          lat: loc.lat,
+          lng: loc.lng,
+          locationAccuracy: loc.accuracy,
         }),
       });
       votedThisSession = true;
@@ -1660,6 +1809,8 @@
         voting_closed: "Voting has closed.",
         voting_before: "Voting hasn't opened yet.",
         invalid_or_expired_session: "Your verification expired — please verify again.",
+        outside_campus: (err.detail) || "You're too far from campus to vote right now.",
+        location_required: "Location is required to vote.",
       }[err.code] || "Couldn't record your vote — try again.";
       showToast(msg);
       if (err.code === "invalid_or_expired_session") {
@@ -1677,6 +1828,7 @@
       VOTING_START = new Date(cfg.votingStart);
       VOTING_END = new Date(cfg.votingEnd);
       serverStatus = cfg.status;
+      CAMPUS = cfg.campus || null;
     } catch (err) {
       eligWrapEl.innerHTML =
         '<div class="tcv-elig"><div class="tcv-elig-head">Can\'t reach the vote server</div>' +

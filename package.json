@@ -4,11 +4,13 @@
   "description": "Real backend for the Top Customer Vote app: student lookup, WhatsApp/SMS OTP delivery, vote recording.",
   "main": "server.js",
   "engines": {
-     "node": ">=18.0.0 <21.0.0"
+    "node": ">=18.0.0 <21.0.0"
   },
   "scripts": {
     "start": "node server.js",
-    "initdb": "node scripts/init-db.js"
+    "initdb": "node scripts/init-db.js",
+    "import-transactions": "node scripts/import-transactions.js transactions_export.csv",
+    "seed-todays-transaction": "node scripts/seed-todays-transaction.js"
   },
   "dependencies": {
     "better-sqlite3": "^11.3.0",

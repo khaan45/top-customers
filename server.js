@@ -7,7 +7,7 @@ const { sendWhatsAppOtp } = require('./whatsapp');
 const { sendSms } = require('./sms');
 const {
   studentLookup, studentLookupByMobile, saveOtp, getOtp, bumpOtpAttempts, clearOtp,
-  getVote, castVote, allVotes,
+  getVote, castVote, allVotes, registerStudentFromTransaction,
 } = require('./db');
 
 const app = express();
@@ -23,6 +23,7 @@ app.use(cors({ origin: allowedOrigins.length ? allowedOrigins : true }));
 
 // Basic abuse protection on the endpoints that touch phones/DB lookups
 app.use('/api/otp', rateLimit({ windowMs: 60_000, max: 6, standardHeaders: true, legacyHeaders: false }));
+app.use('/api/students', rateLimit({ windowMs: 60_000, max: 6 }));
 app.use('/api/vote', rateLimit({ windowMs: 60_000, max: 10 }));
 
 const VOTING_START = new Date(process.env.VOTING_START || '2026-08-06T00:00:00Z');
@@ -30,6 +31,30 @@ const VOTING_END = new Date(process.env.VOTING_END || '2026-08-26T23:59:00Z');
 const OTP_TTL = Number(process.env.OTP_TTL_SECONDS || 300) * 1000;
 const SESSION_TTL = Number(process.env.SESSION_TTL_SECONDS || 600) * 1000;
 const SESSION_SECRET = process.env.SESSION_SECRET || '';
+
+// =====================================================================
+// SET THESE to your real campus coordinates and how far outside them a
+// vote should still be allowed. Get the coordinates from Google Maps:
+// right-click your campus center → the lat,lng shown at the top of the
+// menu. CAMPUS_RADIUS_METERS should cover the whole campus plus some
+// margin for GPS inaccuracy (phone GPS is commonly off by 10-50m,
+// more indoors) — too tight a radius will wrongly block real students.
+// =====================================================================
+const CAMPUS_LAT = Number(process.env.CAMPUS_LAT || '0');
+const CAMPUS_LNG = Number(process.env.CAMPUS_LNG || '0');
+const CAMPUS_RADIUS_METERS = Number(process.env.CAMPUS_RADIUS_METERS || '800');
+
+// Haversine formula — distance in meters between two lat/lng points.
+function distanceMeters(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const toRad = (d) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
 // Same nominees as the frontend — spend never leaves the server.
 const NOMINEES = [
@@ -92,6 +117,28 @@ app.get('/api/config', (req, res) => {
     votingEnd: VOTING_END.toISOString(),
     nominees: NOMINEES.map((n) => ({ id: n.id, firstName: n.firstName })),
     prizes: PRIZES,
+    campus: { lat: CAMPUS_LAT, lng: CAMPUS_LNG, radiusMeters: CAMPUS_RADIUS_METERS },
+  });
+});
+
+// ---- New customer self-registration: someone not yet in the students
+// table can register on the spot if they made a real purchase TODAY,
+// proven by a transaction ID. See findTodaysTransaction() in db.js for the
+// important caveat about swapping this for a live payment feed. ----
+app.post('/api/students/register', (req, res) => {
+  const { mobile, transferId } = req.body || {};
+  if (!mobile || !transferId) return res.status(400).json({ error: 'missing_fields' });
+
+  const transferIdNum = parseInt(transferId, 10);
+  if (Number.isNaN(transferIdNum)) return res.status(400).json({ error: 'invalid_transfer_id' });
+
+  const result = registerStudentFromTransaction(transferIdNum, normalizePhone(mobile));
+  if (!result.ok) return res.status(400).json({ error: result.error });
+
+  res.json({
+    ok: true,
+    studentId: result.student.student_id,
+    fullName: result.student.full_name,
   });
 });
 
@@ -152,7 +199,7 @@ app.post('/api/otp/verify', (req, res) => {
 
 // ---- Step 3: cast the vote (server enforces every rule, not the browser) ----
 app.post('/api/vote', (req, res) => {
-  const { sessionToken, nomineeId, ageConfirmed, notStaffConfirmed, hasAccountConfirmed } = req.body || {};
+  const { sessionToken, nomineeId, ageConfirmed, notStaffConfirmed, hasAccountConfirmed, lat, lng, locationAccuracy } = req.body || {};
 
   const status = votingStatus();
   if (status !== 'open') return res.status(403).json({ error: 'voting_' + status });
@@ -165,6 +212,20 @@ app.post('/api/vote', (req, res) => {
   }
   if (!NOMINEES.some((n) => n.id === nomineeId)) {
     return res.status(400).json({ error: 'invalid_nominee' });
+  }
+
+  // Voters must be on/near campus. Client-side already checked this for a
+  // fast error message, but that check is skippable by anyone calling this
+  // API directly — this server check is the one that actually matters.
+  if (typeof lat !== 'number' || typeof lng !== 'number') {
+    return res.status(400).json({ error: 'location_required' });
+  }
+  const distance = distanceMeters(lat, lng, CAMPUS_LAT, CAMPUS_LNG);
+  if (distance > CAMPUS_RADIUS_METERS) {
+    return res.status(403).json({
+      error: 'outside_campus',
+      detail: `You're about ${Math.round(distance)}m from campus; voting is only allowed within ${CAMPUS_RADIUS_METERS}m.`,
+    });
   }
 
   const existing = getVote(session.sid);
