@@ -6,7 +6,7 @@ const rateLimit = require('express-rate-limit');
 const { sendWhatsAppOtp } = require('./whatsapp');
 const { sendSms } = require('./sms');
 const {
-  studentLookup, saveOtp, getOtp, bumpOtpAttempts, clearOtp,
+  studentLookup, studentLookupByMobile, saveOtp, getOtp, bumpOtpAttempts, clearOtp,
   getVote, castVote, allVotes,
 } = require('./db');
 
@@ -97,16 +97,14 @@ app.get('/api/config', (req, res) => {
 
 // ---- Step 1: real student lookup, then send the OTP over the requested channel ----
 app.post('/api/otp/send', async (req, res) => {
-  const { studentId, mobile, channel } = req.body || {};
-  if (!studentId || !mobile) return res.status(400).json({ error: 'missing_fields' });
+  const { mobile, channel } = req.body || {};
+  if (!mobile) return res.status(400).json({ error: 'missing_fields' });
 
   var useChannel = channel === 'sms' ? 'sms' : 'whatsapp'; // defaults to whatsapp
 
-  const student = studentLookup(String(studentId).toUpperCase());
-  if (!student) return res.status(404).json({ error: 'student_not_found' });
-  if (normalizePhone(student.mobile) !== normalizePhone(mobile)) {
-    return res.status(400).json({ error: 'mobile_mismatch' });
-  }
+  // No Student ID typed anymore — look the account up by mobile number instead.
+  const student = studentLookupByMobile(normalizePhone(mobile));
+  if (!student) return res.status(404).json({ error: 'mobile_not_found' });
 
   const code = String(crypto.randomInt(100000, 999999));
   saveOtp(student.student_id, student.mobile, hashCode(code, student.student_id), Date.now() + OTP_TTL);
@@ -124,6 +122,7 @@ app.post('/api/otp/send', async (req, res) => {
   res.json({
     ok: true,
     channel: useChannel,
+    studentId: student.student_id,   // auto-looked-up, e.g. "UCS-2026-00001"
     fullName: student.full_name,
     purchasedThisSemester: !!student.purchased_this_semester,
     isStaff: !!student.is_staff,

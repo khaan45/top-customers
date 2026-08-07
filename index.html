@@ -24,7 +24,7 @@
   .cb-grid {
     display: grid;
     grid-template-columns: 1.15fr 1fr;
-    min-height: 360px;
+    min-height: 220px;
   }
   @media (max-width: 420px) {
     .cb-grid { grid-template-columns: 1fr; }
@@ -32,28 +32,28 @@
 
   /* ---------- LEFT: copy ---------- */
   .cb-left {
-    padding: 34px 30px 26px;
+    padding: 22px 24px 18px;
     position: relative;
     z-index: 2;
   }
   .cb-seal {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 22px;
+    gap: 9px;
+    margin-bottom: 13px;
   }
-  .cb-seal svg { width: 56px; height: 56px; flex-shrink: 0; }
+  .cb-seal svg { width: 40px; height: 40px; flex-shrink: 0; }
   .cb-seal-name {
     font-family: 'Inter', sans-serif;
     font-weight: 800;
-    font-size: 17px;
+    font-size: 14px;
     letter-spacing: 0.03em;
     color: var(--navy);
     line-height: 1.15;
   }
   .cb-seal-tag {
     font-family: 'Caveat', cursive;
-    font-size: 17px;
+    font-size: 14px;
     color: var(--leaf);
     font-weight: 600;
     margin-top: 1px;
@@ -62,8 +62,8 @@
   .cb-headline {
     font-family: 'Bebas Neue', sans-serif;
     color: var(--navy);
-    font-size: 58px;
-    line-height: 0.92;
+    font-size: 32px;
+    line-height: 0.95;
     letter-spacing: 0.01em;
     margin: 0;
   }
@@ -86,7 +86,7 @@
   }
   .cb-check-o svg { width: 58%; height: 58%; }
 
-  .cb-ribbon-wrap { margin: 16px 0 14px; }
+  .cb-ribbon-wrap { margin: 10px 0 9px; }
   .cb-ribbon {
     display: inline-block;
     position: relative;
@@ -94,56 +94,56 @@
     color: var(--white);
     font-family: 'Inter', sans-serif;
     font-weight: 800;
-    font-size: 15px;
+    font-size: 12px;
     letter-spacing: 0.02em;
-    padding: 9px 26px;
+    padding: 6px 18px;
   }
   .cb-ribbon::before, .cb-ribbon::after {
     content: "";
     position: absolute;
     top: 0;
-    border-top: 19px solid var(--navy);
-    border-bottom: 19px solid var(--navy);
+    border-top: 14px solid var(--navy);
+    border-bottom: 14px solid var(--navy);
   }
-  .cb-ribbon::before { left: -14px; border-left: 14px solid transparent; }
-  .cb-ribbon::after { right: -14px; border-right: 14px solid transparent; }
+  .cb-ribbon::before { left: -10px; border-left: 10px solid transparent; }
+  .cb-ribbon::after { right: -10px; border-right: 10px solid transparent; }
   .cb-ribbon b { color: var(--gold); }
 
   .cb-sub {
-    font-size: 15px;
-    line-height: 1.55;
+    font-size: 13px;
+    line-height: 1.5;
     color: #33415A;
     max-width: 380px;
-    margin: 4px 0 26px;
+    margin: 4px 0 15px;
   }
   .cb-sub b { color: var(--navy); }
 
   .cb-features {
     display: flex;
-    gap: 22px;
+    gap: 15px;
   }
   .cb-feature {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
+    gap: 5px;
     max-width: 130px;
   }
   .cb-feature-ic {
-    width: 46px; height: 46px;
+    width: 34px; height: 34px;
     border-radius: 50%;
     background: var(--navy);
     display: flex; align-items: center; justify-content: center;
     box-shadow: 0 0 0 2px var(--gold);
   }
-  .cb-feature-ic svg { width: 22px; height: 22px; }
+  .cb-feature-ic svg { width: 16px; height: 16px; }
   .cb-feature-label {
     font-family: 'Inter', sans-serif;
     font-weight: 700;
-    font-size: 11px;
+    font-size: 9.5px;
     letter-spacing: 0.02em;
     color: var(--navy);
-    line-height: 1.3;
+    line-height: 1.25;
     text-transform: uppercase;
   }
   .cb-divider { width: 1px; align-self: stretch; background: #DCD3C4; margin-top: 4px; }
@@ -174,30 +174,30 @@
 
   .cb-medal {
     position: absolute;
-    top: 22px; right: 26px;
-    width: 168px;
+    top: 14px; right: 16px;
+    width: 118px;
     text-align: center;
     filter: drop-shadow(0 8px 16px rgba(0,0,0,0.35));
   }
   .cb-vote-now {
     position: absolute;
-    left: 18px;
-    top: 46%;
-    width: 138px;
+    left: 12px;
+    top: 42%;
+    width: 98px;
     filter: drop-shadow(0 8px 14px rgba(0,0,0,0.35));
   }
 
   @media (max-width: 720px) {
-    .cb-right { min-height: 360px; }
-    .cb-medal { width: 128px; top: 16px; right: 16px; }
-    .cb-vote-now { width: 112px; top: auto; bottom: 30%; }
+    .cb-right { min-height: 240px; }
+    .cb-medal { width: 96px; top: 12px; right: 12px; }
+    .cb-vote-now { width: 84px; top: auto; bottom: 26%; }
   }
 
   /* ---------- FOOTER ---------- */
   .cb-footer {
     background: var(--navy-deep);
     color: var(--white);
-    padding: 18px 30px;
+    padding: 13px 22px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -258,14 +258,13 @@
   }
   .tcv-brand-banner {
     position: relative;
-    background: repeating-linear-gradient(
-      90deg,
-      var(--amber) 0px, var(--amber) 22px,
-      #DD9636 22px, #DD9636 44px
-    );
-    color: var(--teal-deep);
+    background:
+      radial-gradient(ellipse 70% 90% at 50% -20%, rgba(240,169,26,0.22), transparent 62%),
+      repeating-linear-gradient(45deg, rgba(240,169,26,0.055) 0px, rgba(240,169,26,0.055) 1px, transparent 1px, transparent 13px),
+      linear-gradient(135deg, #0B2544 0%, #1B3F6E 48%, #0B2544 100%);
+    color: var(--paper);
     text-align: center;
-    padding: 14px 20px 18px;
+    padding: 16px 20px 22px;
   }
   .tcv-brand-name {
     display: flex;
@@ -276,17 +275,79 @@
     font-size: 18px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.4);
   }
   .tcv-brand-name svg { flex-shrink: 0; width: 20px; height: 20px; }
-  .tcv-brand-ic { font-size: 16px; }
+  .tcv-brand-ic { font-size: 16px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); }
+  .tcv-brand-rule {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 150px;
+    margin: 7px auto 6px;
+  }
+  .tcv-brand-rule::before, .tcv-brand-rule::after {
+    content: "";
+    height: 1px;
+    flex: 1;
+    background: linear-gradient(90deg, transparent, var(--gold));
+  }
+  .tcv-brand-rule::after { background: linear-gradient(90deg, var(--gold), transparent); }
+  .tcv-brand-rule-dot {
+    width: 5px; height: 5px;
+    margin: 0 8px;
+    background: var(--gold);
+    transform: rotate(45deg);
+    flex-shrink: 0;
+    box-shadow: 0 0 5px rgba(240,169,26,0.7);
+  }
   .tcv-brand-tagline {
     font-family: 'Space Mono', monospace;
     font-size: 9.5px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: rgba(8,42,39,0.65);
+    color: rgba(251,243,231,0.88);
     margin-top: 3px;
   }
+  .tcv-vote-clock {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: rgba(251,243,231,0.75);
+    margin-bottom: 14px;
+    padding: 7px 14px;
+    border: 1px solid rgba(251,243,231,0.18);
+    border-radius: 999px;
+    background: rgba(0,0,0,0.14);
+  }
+  .tcv-vote-clock-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #6FD696;
+    box-shadow: 0 0 5px rgba(111,214,150,0.8);
+    flex-shrink: 0;
+  }
+  .tcv-brand-contest {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: linear-gradient(180deg, #FFCB5C 0%, var(--gold) 55%, #D98F12 100%);
+    color: var(--navy);
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    padding: 7px 18px;
+    border-radius: 999px;
+    margin-top: 13px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.5);
+  }
+  .tcv-brand-contest .tcv-trophy { font-size: 13px; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.25)); }
+  .tcv-brand-contest span.hl { color: var(--white); }
   .tcv-brand-banner::before, .tcv-brand-banner::after {
     content: "";
     position: absolute;
@@ -296,13 +357,14 @@
     border-radius: 50%;
     transform: translateY(-50%);
     z-index: 2;
+    box-shadow: 0 0 0 2px var(--gold), inset 0 1px 2px rgba(0,0,0,0.4);
   }
   .tcv-brand-banner::before { left: -8px; }
   .tcv-brand-banner::after { right: -8px; }
   .tcv-scallop {
     height: 14px;
     background-image: radial-gradient(circle at 11px 0, var(--teal-deep) 11px, transparent 12px),
-                       radial-gradient(circle at 11px 0, var(--amber) 9px, transparent 10px);
+                       radial-gradient(circle at 11px 0, var(--navy) 9px, transparent 10px);
     background-size: 22px 14px;
     background-repeat: repeat-x;
     background-position: 0 0, 0 0;
@@ -358,6 +420,32 @@
     border-radius: 12px;
     padding: 14px 16px 16px;
     margin-bottom: 20px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+  .tcv-progress.tcv-live-flash {
+    background: rgba(111,214,150,0.10);
+    border-color: rgba(111,214,150,0.4);
+  }
+  .tcv-live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Space Mono', monospace;
+    font-size: 8.5px;
+    letter-spacing: 0.08em;
+    color: #6FD696;
+    margin-left: 7px;
+  }
+  .tcv-live-badge-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #6FD696;
+    box-shadow: 0 0 5px rgba(111,214,150,0.8);
+    animation: tcv-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes tcv-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.75); }
   }
   .tcv-progress-top {
     display: flex;
@@ -473,6 +561,74 @@
   .tcv-banner.open .tcv-banner-dot { background: #6FD696; box-shadow: 0 0 0 3px rgba(111,214,150,0.25); }
   .tcv-banner.before .tcv-banner-dot { background: var(--amber); }
   .tcv-banner.closed .tcv-banner-dot { background: #9A8F7C; }
+
+  /* Countdown widget */
+  .tcv-countdown {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: rgba(226,84,61,0.1);
+    border: 1px solid rgba(226,84,61,0.3);
+    border-radius: 12px;
+    padding: 16px 14px;
+    margin-bottom: 20px;
+  }
+  .tcv-countdown-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(251,243,231,0.6);
+    width: 100%;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .tcv-countdown-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+  }
+  .tcv-countdown-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 54px;
+  }
+  .tcv-countdown-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    line-height: 1;
+    color: var(--paper);
+    background: var(--teal-deep);
+    border-radius: 8px;
+    padding: 8px 4px;
+    width: 100%;
+    text-align: center;
+    box-shadow: inset 0 0 0 1.5px rgba(240,166,61,0.35);
+    font-variant-numeric: tabular-nums;
+  }
+  .tcv-countdown-unit-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(251,243,231,0.5);
+    margin-top: 5px;
+  }
+  .tcv-countdown-sep {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--coral);
+    padding-bottom: 16px;
+  }
+  @media (max-width: 420px) {
+    .tcv-countdown-unit { min-width: 44px; }
+    .tcv-countdown-num { font-size: 24px; padding: 6px 3px; }
+    .tcv-countdown-sep { font-size: 20px; padding-bottom: 14px; }
+  }
 
   .tcv-formula {
     font-family: 'Space Mono', monospace;
@@ -851,150 +1007,6 @@
   }
 </style>
 
-<div class="campaign-page-wrap">
-
-<div id="campaign-root">
-  <div class="cb-grid">
-    <div class="cb-left">
-      <div class="cb-seal">
-        <svg viewBox="0 0 64 64" fill="none">
-          <circle cx="32" cy="32" r="30" stroke="#0B2544" stroke-width="1.6"/>
-          <path d="M18 42c4-3 9-4.5 14-4.5s10 1.5 14 4.5" stroke="#C9902E" stroke-width="1.4" fill="none"/>
-          <path d="M32 18L50 25L32 32L14 25Z" fill="#0B2544"/>
-          <path d="M22 27.5V34c0 2.5 4.5 5 10 5s10-2.5 10-5v-6.5" stroke="#0B2544" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-          <path d="M50 25v8" stroke="#0B2544" stroke-width="1.6" stroke-linecap="round"/>
-          <circle cx="50" cy="35" r="1.6" fill="#0B2544"/>
-        </svg>
-        <div>
-          <div class="cb-seal-name">UNIVERSITY CAFETERIA</div>
-          <div class="cb-seal-tag">Great Food, Great Experience!</div>
-        </div>
-      </div>
-
-      <h1 class="cb-headline">
-        TOP CUSTOMER<br>
-        <span class="vote-word">V<span class="cb-check-o"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#0B2544" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>TE!</span>
-      </h1>
-
-      <div class="cb-ribbon-wrap">
-        <div class="cb-ribbon">YOU ENJOY, THEY <b>DESERVE!</b></div>
-      </div>
-
-      <p class="cb-sub">Vote for your favorite customer and help us appreciate their <b>loyalty</b> and <b>support</b>.</p>
-
-      <div class="cb-features">
-        <div class="cb-feature">
-          <div class="cb-feature-ic"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="#F0A91A" stroke-width="1.6"/><path d="M3 20c0-3.9 2.7-6 6-6s6 2.1 6 6" stroke="#F0A91A" stroke-width="1.6" stroke-linecap="round"/><path d="M17 13.5c1.7.5 3 1.9 3 4.2" stroke="#F0A91A" stroke-width="1.6" stroke-linecap="round"/><path d="M16 5.2c.9.4 1.5 1.2 1.5 2.4 0 1.4-.9 2.2-1.8 2.6" stroke="#F0A91A" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-          <div class="cb-feature-label">Appreciate Loyal Customers</div>
-        </div>
-        <div class="cb-divider"></div>
-        <div class="cb-feature">
-          <div class="cb-feature-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M8 4h8v4a4 4 0 01-8 0V4z" stroke="#F0A91A" stroke-width="1.6"/><path d="M8 5H5v1a3 3 0 003 3M16 5h3v1a3 3 0 01-3 3" stroke="#F0A91A" stroke-width="1.6" stroke-linecap="round"/><path d="M12 12v4M9 20h6M10 16h4v2a2 2 0 01-2 2 2 2 0 01-2-2v-2z" stroke="#F0A91A" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
-          <div class="cb-feature-label">Exciting Prizes For Top 5</div>
-        </div>
-        <div class="cb-divider"></div>
-        <div class="cb-feature">
-          <div class="cb-feature-ic"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="9" r="2.6" stroke="#F0A91A" stroke-width="1.6"/><circle cx="16" cy="10" r="2.2" stroke="#F0A91A" stroke-width="1.6"/><path d="M4 19c0-3 2.2-5 5-5s5 2 5 5" stroke="#F0A91A" stroke-width="1.6" stroke-linecap="round"/><path d="M14.5 14.5c2.2.3 3.5 1.9 3.5 4.5" stroke="#F0A91A" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-          <div class="cb-feature-label">Stronger Community Together</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="cb-right">
-      <div class="cb-bokeh">
-        <span style="width:60px;height:60px;top:20px;left:60%;"></span>
-        <span style="width:34px;height:34px;top:70px;left:75%;"></span>
-        <span style="width:80px;height:80px;top:10px;left:20%;"></span>
-        <span style="width:26px;height:26px;top:100px;left:45%;"></span>
-      </div>
-
-      <!-- Illustrated placeholder standing in for real food photography.
-           Swap this whole .cb-plate-scene block for an <img> of your own
-           cafeteria photo — see the comment below. -->
-      <svg class="cb-plate-scene" viewBox="0 0 400 260" preserveAspectRatio="xMidYMax meet" style="width:100%;">
-        <ellipse cx="230" cy="235" rx="150" ry="20" fill="#000" opacity="0.18"/>
-        <circle cx="230" cy="205" r="118" fill="#FBF3E7"/>
-        <circle cx="230" cy="205" r="102" fill="#F3E7D2"/>
-        <!-- rice mound -->
-        <ellipse cx="185" cy="195" rx="52" ry="34" fill="#FBFAF5"/>
-        <path d="M155 185c6-3 12-4 18-3M165 205c8-2 16-2 22 1M180 178c6-2 13-2 18 0" stroke="#E4DCC5" stroke-width="2" fill="none" stroke-linecap="round"/>
-        <!-- grilled protein -->
-        <ellipse cx="278" cy="200" rx="58" ry="32" fill="#B5651D"/>
-        <ellipse cx="278" cy="196" rx="50" ry="25" fill="#D97F30"/>
-        <path d="M250 190c10-6 24-8 36-4M255 205c12-4 26-4 34 1" stroke="#8A4A16" stroke-width="2" fill="none" stroke-linecap="round"/>
-        <!-- tomato slices -->
-        <circle cx="322" cy="178" r="11" fill="#C0392B"/>
-        <circle cx="322" cy="178" r="6" fill="#E0574A"/>
-        <circle cx="335" cy="192" r="11" fill="#C0392B"/>
-        <circle cx="335" cy="192" r="6" fill="#E0574A"/>
-        <!-- cucumber / greens -->
-        <path d="M128 195c7-5 16-6 22 1M120 212c9-4 19-3 25 2" stroke="#4C9A6B" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <ellipse cx="150" cy="230" rx="10" ry="5" fill="#7FB88A"/>
-        <ellipse cx="168" cy="234" rx="10" ry="5" fill="#7FB88A"/>
-      </svg>
-      <!-- <img src="your-cafeteria-photo.jpg" class="cb-plate-scene" style="width:100%;height:100%;object-fit:cover;"> -->
-
-      <div class="cb-medal">
-        <svg viewBox="0 0 168 168" fill="none">
-          <circle cx="84" cy="70" r="58" fill="#F0A91A"/>
-          <circle cx="84" cy="70" r="58" fill="url(#medalShine)"/>
-          <circle cx="84" cy="70" r="50" fill="none" stroke="#C9902E" stroke-width="1.5"/>
-          <path d="M60 88l-4 14 8-3 6 7 4-14M108 88l4 14-8-3-6 7-4-14" stroke="#C9902E" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-          <path d="M68 52h32v8a16 16 0 01-32 0v-8z" fill="#0B2544"/>
-          <path d="M68 54h-8v3a10 10 0 008 8M100 54h8v3a10 10 0 01-8 8" stroke="#0B2544" stroke-width="2.4" stroke-linecap="round" fill="none"/>
-          <rect x="76" y="72" width="16" height="14" fill="#0B2544"/>
-          <rect x="20" y="98" width="128" height="30" rx="2" fill="#0B2544"/>
-          <path d="M20 98l-12 15 12 15zM148 98l12 15-12 15z" fill="#08132B"/>
-          <text x="84" y="112" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="12" fill="#FFFFFF">TOP 5 WINNERS</text>
-          <text x="84" y="124" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" font-size="9" fill="#F0A91A">WILL BE REWARDED</text>
-          <defs>
-            <radialGradient id="medalShine" cx="35%" cy="30%" r="70%">
-              <stop offset="0%" stop-color="#FFE9B0" stop-opacity="0.7"/>
-              <stop offset="100%" stop-color="#F0A91A" stop-opacity="0"/>
-            </radialGradient>
-          </defs>
-        </svg>
-      </div>
-
-      <div class="cb-vote-now">
-        <svg viewBox="0 0 138 168" fill="none">
-          <circle cx="69" cy="66" r="62" fill="#4C9A6B" stroke="#FFFFFF" stroke-width="4"/>
-          <circle cx="69" cy="40" r="15" fill="none" stroke="#FFFFFF" stroke-width="2.4"/>
-          <path d="M62 40l5 5 9-10" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M50 66c4-8 12-10 19-10s15 2 19 10l-4 14H54z" fill="#FFFFFF"/>
-          <rect x="60" y="52" width="18" height="16" rx="3" fill="#FFFFFF"/>
-          <text x="69" y="92" text-anchor="middle" font-family="'Bebas Neue', sans-serif" font-size="19" fill="#FFFFFF" letter-spacing="1">VOTE</text>
-          <text x="69" y="110" text-anchor="middle" font-family="'Bebas Neue', sans-serif" font-size="19" fill="#FFFFFF" letter-spacing="1">NOW!</text>
-          <g transform="translate(9,130)">
-            <path d="M0 8 L10 0 L110 0 L120 8 L110 16 L10 16 Z" fill="#F0A91A"/>
-            <text x="60" y="7" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="7.5" fill="#0B2544">YOUR VOTE</text>
-            <text x="60" y="14" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="7.5" fill="#0B2544">MAKES A DIFFERENCE!</text>
-          </g>
-        </svg>
-      </div>
-    </div>
-  </div>
-
-  <div class="cb-footer">
-    <div class="cb-footer-item">
-      <div class="cb-footer-ic"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="16" rx="2" stroke="#F0A91A" stroke-width="1.6"/><path d="M4 10h16M8 3v4M16 3v4" stroke="#F0A91A" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-      <div>
-        <div class="cb-footer-label">Voting Period</div>
-        <div class="cb-footer-value">6 &ndash; 20 August 2026</div>
-      </div>
-    </div>
-    <div class="cb-footer-item">
-      <div class="cb-footer-ic"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="9" width="14" height="11" rx="1.5" stroke="#F0A91A" stroke-width="1.6"/><path d="M5 13h14M12 9v11" stroke="#F0A91A" stroke-width="1.6"/><path d="M12 9c-2 0-3-1-3-2.5S10 4 12 6c0-2 1-3 2.5-2S15 6 13 9" stroke="#F0A91A" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
-      <div>
-        <div class="cb-footer-label">Top 5 Winners</div>
-        <div class="cb-footer-value">Will Receive Amazing Prizes!</div>
-      </div>
-    </div>
-    <div class="cb-footer-note">Thank you for being<br>a valued part of our community! &#9825;</div>
-  </div>
-</div>
-<div class="campaign-divider"></div>
-
 <div id="tcv-root">
   <div class="tcv-brand-banner">
     <div class="tcv-brand-name">
@@ -1002,7 +1014,9 @@
       <span>University Cafeteria And Snack Bar</span>
       <span class="tcv-brand-ic">&#127860;</span>
     </div>
+    <div class="tcv-brand-rule"><span class="tcv-brand-rule-dot"></span></div>
     <div class="tcv-brand-tagline">Est. on campus &middot; Serving students daily</div>
+    <div class="tcv-brand-contest"><span class="tcv-trophy">&#127942;</span> <span class="hl">Top Customer Vote</span> &mdash; 5 Winners, Real Prizes</div>
   </div>
   <div class="tcv-scallop"></div>
   <div class="tcv-body">
@@ -1020,6 +1034,7 @@
     </div>
 
     <div id="tcv-banner" class="tcv-banner"></div>
+    <div id="tcv-countdown-wrap"></div>
 
     <div class="tcv-formula">
       <span class="tcv-formula-label">SCORE</span>
@@ -1065,6 +1080,8 @@
     <div id="tcv-elig-wrap"></div>
     <div id="tcv-state-note-wrap"></div>
 
+    <div class="tcv-vote-clock"><span class="tcv-vote-clock-dot"></span>Voting now &middot; <span id="tcv-live-clock-text">&mdash;</span></div>
+
     <div id="tcv-list" class="tcv-list"></div>
 
     <div class="tcv-footer">
@@ -1073,7 +1090,6 @@
     </div>
   </div>
   </div>
-</div>
 </div>
 
 <script>
@@ -1099,6 +1115,7 @@
   var toastEl = document.getElementById("tcv-toast");
   var bannerEl = document.getElementById("tcv-banner");
   var progressWrapEl = document.getElementById("tcv-progress-wrap");
+  var countdownWrapEl = document.getElementById("tcv-countdown-wrap");
   var eligWrapEl = document.getElementById("tcv-elig-wrap");
   var stateNoteWrapEl = document.getElementById("tcv-state-note-wrap");
 
@@ -1144,6 +1161,76 @@
     var mins = Math.floor((ms % 3600000) / 60000);
     return hours + "h " + mins + "m";
   }
+
+  var countdownTicking = false;
+
+  function pad2(n) { return n < 10 ? "0" + n : String(n); }
+
+  function tickCountdown() {
+    if (!countdownWrapEl || !VOTING_START || !VOTING_END) return;
+    var now = new Date();
+    var status = serverStatus;
+    var target = status === "before" ? VOTING_START : VOTING_END;
+    var label = status === "before" ? "Voting opens in" : "Voting closes in";
+
+    if (status === "closed") {
+      countdownWrapEl.innerHTML = "";
+      return;
+    }
+
+    var ms = Math.max(0, target - now);
+    var days = Math.floor(ms / 86400000);
+    var hours = Math.floor((ms % 86400000) / 3600000);
+    var mins = Math.floor((ms % 3600000) / 60000);
+    var secs = Math.floor((ms % 60000) / 1000);
+
+    if (ms <= 0) {
+      // window boundary just passed — let the next full render() pick up the new status
+      return;
+    }
+
+    var units = [
+      { n: days, l: "Days" },
+      { n: hours, l: "Hrs" },
+      { n: mins, l: "Min" },
+      { n: secs, l: "Sec" },
+    ];
+    var rowHtml = units.map(function(u, i) {
+      return (i > 0 ? '<span class="tcv-countdown-sep">:</span>' : '') +
+        '<div class="tcv-countdown-unit">' +
+          '<div class="tcv-countdown-num">' + pad2(u.n) + '</div>' +
+          '<div class="tcv-countdown-unit-label">' + u.l + '</div>' +
+        '</div>';
+    }).join("");
+
+    countdownWrapEl.innerHTML =
+      '<div class="tcv-countdown">' +
+        '<div class="tcv-countdown-label">' + label + '</div>' +
+        '<div class="tcv-countdown-row">' + rowHtml + '</div>' +
+      '</div>';
+  }
+
+  function startCountdown() {
+    if (countdownTicking) return;
+    countdownTicking = true;
+    tickCountdown();
+    setInterval(tickCountdown, 1000);
+  }
+
+  function tickLiveClock() {
+    var el = document.getElementById("tcv-live-clock-text");
+    if (!el) return;
+    var now = new Date();
+    var datePart = now.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+    var timePart = now.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    el.textContent = datePart + " \u00b7 " + timePart;
+  }
+
+  function startLiveClock() {
+    tickLiveClock();
+    setInterval(tickLiveClock, 1000);
+  }
+  startLiveClock();
 
   function scoreOf(n, counts) {
     var maxVotes = Math.max.apply(null, NOMINEES.map(function(x) { return counts[x.id] || 0; }).concat([0]));
@@ -1198,7 +1285,7 @@
     progressWrapEl.innerHTML =
       '<div class="tcv-progress">' +
         '<div class="tcv-progress-top">' +
-          '<span class="tcv-progress-label">Voting Progress</span>' +
+          '<span class="tcv-progress-label">Voting Progress<span class="tcv-live-badge"><span class="tcv-live-badge-dot"></span>LIVE</span></span>' +
           '<span class="tcv-progress-pct">' + Math.round(pct) + '%</span>' +
         '</div>' +
         '<div class="tcv-progress-track"><div class="tcv-progress-fill" style="width:' + pct.toFixed(1) + '%"></div></div>' +
@@ -1230,11 +1317,7 @@
       eligWrapEl.innerHTML =
         '<div class="tcv-elig">' +
           '<div class="tcv-elig-head">Verify to vote</div>' +
-          '<div class="tcv-elig-sub">Enter your Student ID and mobile number, and choose how you\'d like to receive your one-time code.</div>' +
-          '<div class="tcv-field">' +
-            '<label class="tcv-label">Student ID</label>' +
-            '<input type="text" class="tcv-input" id="tcv-sid-input" placeholder="e.g. UCS-2024-00187">' +
-          '</div>' +
+          '<div class="tcv-elig-sub">Enter your mobile number and choose how you\'d like to receive your one-time code &mdash; we\'ll look up your account automatically.</div>' +
           '<div class="tcv-field">' +
             '<label class="tcv-label">Mobile Number</label>' +
             '<input type="text" class="tcv-input" id="tcv-acc-input" placeholder="e.g. 25263xxxxxxx">' +
@@ -1314,19 +1397,19 @@
     try {
       var data = await api("/api/otp/send", {
         method: "POST",
-        body: JSON.stringify({ studentId: otpStudentId, mobile: otpMobile, channel: otpChannel }),
+        body: JSON.stringify({ mobile: otpMobile, channel: otpChannel }),
       });
+      otpStudentId = data.studentId;
       otpFullName = data.fullName;
       otpResendAt = Date.now() + 30000;
       showToast("OTP sent via " + (otpChannel === "sms" ? "SMS" : "WhatsApp") + " to " + otpMobile + ".");
       return true;
     } catch (err) {
       var msg = {
-        student_not_found: "No customer account found for that Student ID.",
-        mobile_mismatch: "That mobile number doesn't match this Student ID on file.",
+        mobile_not_found: "We couldn't find a customer account with that mobile number.",
         whatsapp_failed: "We couldn't send the WhatsApp message right now — try again, or switch to SMS.",
         sms_failed: "We couldn't send the SMS right now — try again, or switch to WhatsApp.",
-        missing_fields: "Enter both your Student ID and mobile number.",
+        missing_fields: "Enter your mobile number.",
       }[err.code] || "Something went wrong sending the OTP. Try again.";
       if (errEl) { errEl.textContent = msg; errEl.classList.add("show"); }
       if (showErrorsOn) showErrorsOn.classList.add("err");
@@ -1344,22 +1427,13 @@
   }
 
   async function onSendOtp() {
-    var sidInput = document.getElementById("tcv-sid-input").value.trim();
     var accInput = document.getElementById("tcv-acc-input").value.trim();
     var errEl = document.getElementById("tcv-elig-error");
-    var sidEl = document.getElementById("tcv-sid-input");
     var accEl = document.getElementById("tcv-acc-input");
     var btn = document.getElementById("tcv-send-otp");
-    sidEl.classList.remove("err");
     accEl.classList.remove("err");
     errEl.classList.remove("show");
 
-    if (sidInput.length < 4) {
-      errEl.textContent = "Enter the Student ID on your customer account.";
-      errEl.classList.add("show");
-      sidEl.classList.add("err");
-      return;
-    }
     if (accInput.length < 6) {
       errEl.textContent = "Enter the mobile number on your customer account.";
       errEl.classList.add("show");
@@ -1367,7 +1441,6 @@
       return;
     }
 
-    otpStudentId = sidInput.toUpperCase();
     otpMobile = accInput;
     btn.disabled = true;
     btn.textContent = "Sending OTP\u2026";
@@ -1444,6 +1517,34 @@
     } catch (err) {
       lastResults = { status: serverStatus, totalVotes: 0, participating: [], results: null };
     }
+  }
+
+  // ---- Live polling: keeps the Voting Progress card + running total current
+  // for anyone just watching the page, without touching the eligibility form
+  // (a full render() would wipe out whatever someone's mid-typing there). ----
+  var livePolling = false;
+
+  function flashLiveUpdate() {
+    if (!progressWrapEl) return;
+    progressWrapEl.classList.add("tcv-live-flash");
+    setTimeout(function() { progressWrapEl.classList.remove("tcv-live-flash"); }, 700);
+  }
+
+  async function pollLiveResults() {
+    var prevTotal = lastResults.totalVotes || 0;
+    await refreshResults();
+    renderProgress(serverStatus, lastResults.totalVotes || 0, lastResults.participating || []);
+    if (totalEl) {
+      var t = lastResults.totalVotes || 0;
+      totalEl.textContent = t + (t === 1 ? " vote recorded" : " votes recorded");
+    }
+    if ((lastResults.totalVotes || 0) !== prevTotal) flashLiveUpdate();
+  }
+
+  function startLivePolling() {
+    if (livePolling) return;
+    livePolling = true;
+    setInterval(pollLiveResults, 12000);
   }
 
   function render() {
@@ -1585,6 +1686,8 @@
     }
     await refreshResults();
     render();
+    startCountdown();
+    startLivePolling();
   }
 
   init();

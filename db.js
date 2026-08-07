@@ -47,6 +47,16 @@ function studentLookup(studentId) {
   return row || null;
 }
 
+/**
+ * The voter now only types their mobile number — the Student ID is looked
+ * up automatically instead of typed in. Requires `mobile` to be unique in
+ * the students table (it is, in the seeded data — see scripts/init-db.js).
+ */
+function studentLookupByMobile(mobile) {
+  const row = db.prepare('SELECT * FROM students WHERE mobile = ?').get(mobile);
+  return row || null;
+}
+
 function saveOtp(studentId, mobile, codeHash, expiresAt) {
   db.prepare(`
     INSERT INTO otps (student_id, mobile, code_hash, expires_at, attempts)
@@ -85,6 +95,6 @@ function allVotes() {
 }
 
 module.exports = {
-  db, studentLookup, saveOtp, getOtp, bumpOtpAttempts, clearOtp,
+  db, studentLookup, studentLookupByMobile, saveOtp, getOtp, bumpOtpAttempts, clearOtp,
   getVote, castVote, allVotes,
 };
