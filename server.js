@@ -6,8 +6,8 @@ const rateLimit = require('express-rate-limit');
 const { sendWhatsAppOtp } = require('./whatsapp');
 const { sendSms } = require('./sms');
 const {
-  studentLookup, studentLookupByMobile, saveOtp, getOtp, bumpOtpAttempts, clearOtp,
-  getVote, castVote, allVotes, registerStudentFromTransaction,
+  ready, studentLookup, studentLookupByMobile, saveOtp, getOtp, bumpOtpAttempts, clearOtp,
+  getVote, castVote, allVotes, registerStudentFromTransaction, logEvent, queryAuditLog,
 } = require('./db');
 
 const app = express();
@@ -109,6 +109,25 @@ if (!SESSION_SECRET || SESSION_SECRET === 'change-this-to-a-long-random-string')
   console.warn('WARNING: SESSION_SECRET is unset or default — set a real random value in .env before going live.');
 }
 
+const ADMIN_API_KEY = process.env.ADMIN_API_KEY || '';
+if (!ADMIN_API_KEY) {
+  console.warn('WARNING: ADMIN_API_KEY is unset — /api/admin/audit-log is disabled until you set one.');
+}
+
+function requireAdmin(req, res, next) {
+  if (!ADMIN_API_KEY || req.headers['x-admin-key'] !== ADMIN_API_KEY) {
+    return res.status(401).json({ error: 'unauthorized' });
+  }
+  next();
+}
+
+function reqIp(req) {
+  return (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+}
+function reqUa(req) {
+  return (req.headers['user-agent'] || '').slice(0, 200);
+}
+
 // ---- Config: frontend pulls voting window + nominee list from here, not hardcoded ----
 app.get('/api/config', (req, res) => {
   res.json({
@@ -125,16 +144,20 @@ app.get('/api/config', (req, res) => {
 // table can register on the spot if they made a real purchase TODAY,
 // proven by a transaction ID. See findTodaysTransaction() in db.js for the
 // important caveat about swapping this for a live payment feed. ----
-app.post('/api/students/register', (req, res) => {
+app.post('/api/students/register', async (req, res) => {
   const { mobile, transferId } = req.body || {};
   if (!mobile || !transferId) return res.status(400).json({ error: 'missing_fields' });
 
   const transferIdNum = parseInt(transferId, 10);
   if (Number.isNaN(transferIdNum)) return res.status(400).json({ error: 'invalid_transfer_id' });
 
-  const result = registerStudentFromTransaction(transferIdNum, normalizePhone(mobile));
-  if (!result.ok) return res.status(400).json({ error: result.error });
+  const result = await registerStudentFromTransaction(transferIdNum, normalizePhone(mobile));
+  if (!result.ok) {
+    await logEvent({ eventType: 'register_failed', mobile, detail: result.error, ip: reqIp(req), userAgent: reqUa(req) });
+    return res.status(400).json({ error: result.error });
+  }
 
+  await logEvent({ eventType: 'register_success', studentId: result.student.student_id, mobile, detail: 'transferId=' + transferIdNum, ip: reqIp(req), userAgent: reqUa(req) });
   res.json({
     ok: true,
     studentId: result.student.student_id,
@@ -150,11 +173,14 @@ app.post('/api/otp/send', async (req, res) => {
   var useChannel = channel === 'sms' ? 'sms' : 'whatsapp'; // defaults to whatsapp
 
   // No Student ID typed anymore — look the account up by mobile number instead.
-  const student = studentLookupByMobile(normalizePhone(mobile));
-  if (!student) return res.status(404).json({ error: 'mobile_not_found' });
+  const student = await studentLookupByMobile(normalizePhone(mobile));
+  if (!student) {
+    await logEvent({ eventType: 'otp_send_failed', mobile, detail: 'mobile_not_found', ip: reqIp(req), userAgent: reqUa(req) });
+    return res.status(404).json({ error: 'mobile_not_found' });
+  }
 
   const code = String(crypto.randomInt(100000, 999999));
-  saveOtp(student.student_id, student.mobile, hashCode(code, student.student_id), Date.now() + OTP_TTL);
+  await saveOtp(student.student_id, student.mobile, hashCode(code, student.student_id), Date.now() + OTP_TTL);
 
   try {
     if (useChannel === 'sms') {
@@ -163,9 +189,11 @@ app.post('/api/otp/send', async (req, res) => {
       await sendWhatsAppOtp(normalizePhone(student.mobile), code);
     }
   } catch (err) {
+    await logEvent({ eventType: 'otp_send_failed', studentId: student.student_id, mobile, detail: useChannel + '_failed: ' + String(err.message || err), ip: reqIp(req), userAgent: reqUa(req) });
     return res.status(502).json({ error: useChannel === 'sms' ? 'sms_failed' : 'whatsapp_failed', detail: String(err.message || err) });
   }
 
+  await logEvent({ eventType: 'otp_send_success', studentId: student.student_id, mobile, detail: 'channel=' + useChannel, ip: reqIp(req), userAgent: reqUa(req) });
   res.json({
     ok: true,
     channel: useChannel,
@@ -177,40 +205,63 @@ app.post('/api/otp/send', async (req, res) => {
 });
 
 // ---- Step 2: verify the code, issue a short-lived session token ----
-app.post('/api/otp/verify', (req, res) => {
+app.post('/api/otp/verify', async (req, res) => {
   const { studentId, code } = req.body || {};
   if (!studentId || !code) return res.status(400).json({ error: 'missing_fields' });
 
   const sid = String(studentId).toUpperCase();
-  const record = getOtp(sid);
-  if (!record) return res.status(400).json({ error: 'no_otp_pending' });
-  if (Date.now() > record.expires_at) { clearOtp(sid); return res.status(400).json({ error: 'otp_expired' }); }
-  if (record.attempts >= 5) { clearOtp(sid); return res.status(429).json({ error: 'too_many_attempts' }); }
+  const record = await getOtp(sid);
+  if (!record) {
+    await logEvent({ eventType: 'otp_verify_failed', studentId: sid, detail: 'no_otp_pending', ip: reqIp(req), userAgent: reqUa(req) });
+    return res.status(400).json({ error: 'no_otp_pending' });
+  }
+  if (Date.now() > Number(record.expires_at)) {
+    await clearOtp(sid);
+    await logEvent({ eventType: 'otp_verify_failed', studentId: sid, mobile: record.mobile, detail: 'otp_expired', ip: reqIp(req), userAgent: reqUa(req) });
+    return res.status(400).json({ error: 'otp_expired' });
+  }
+  if (record.attempts >= 5) {
+    await clearOtp(sid);
+    await logEvent({ eventType: 'otp_verify_failed', studentId: sid, mobile: record.mobile, detail: 'too_many_attempts', ip: reqIp(req), userAgent: reqUa(req) });
+    return res.status(429).json({ error: 'too_many_attempts' });
+  }
 
   if (hashCode(String(code), sid) !== record.code_hash) {
-    bumpOtpAttempts(sid);
+    await bumpOtpAttempts(sid);
+    await logEvent({ eventType: 'otp_verify_failed', studentId: sid, mobile: record.mobile, detail: 'otp_incorrect', ip: reqIp(req), userAgent: reqUa(req) });
     return res.status(400).json({ error: 'otp_incorrect' });
   }
 
-  clearOtp(sid);
+  await clearOtp(sid);
   const token = signSession({ sid, mobile: record.mobile, exp: Date.now() + SESSION_TTL });
+  await logEvent({ eventType: 'otp_verify_success', studentId: sid, mobile: record.mobile, ip: reqIp(req), userAgent: reqUa(req) });
   res.json({ ok: true, sessionToken: token, expiresInSeconds: SESSION_TTL / 1000 });
 });
 
 // ---- Step 3: cast the vote (server enforces every rule, not the browser) ----
-app.post('/api/vote', (req, res) => {
+app.post('/api/vote', async (req, res) => {
   const { sessionToken, nomineeId, ageConfirmed, notStaffConfirmed, hasAccountConfirmed, lat, lng, locationAccuracy } = req.body || {};
+  const ip = reqIp(req);
+  const ua = reqUa(req);
 
   const status = votingStatus();
-  if (status !== 'open') return res.status(403).json({ error: 'voting_' + status });
+  if (status !== 'open') {
+    await logEvent({ eventType: 'vote_failed', detail: 'voting_' + status, ip, userAgent: ua });
+    return res.status(403).json({ error: 'voting_' + status });
+  }
 
   const session = verifySession(sessionToken);
-  if (!session) return res.status(401).json({ error: 'invalid_or_expired_session' });
+  if (!session) {
+    await logEvent({ eventType: 'vote_failed', detail: 'invalid_or_expired_session', ip, userAgent: ua });
+    return res.status(401).json({ error: 'invalid_or_expired_session' });
+  }
 
   if (!ageConfirmed || !notStaffConfirmed || !hasAccountConfirmed) {
+    await logEvent({ eventType: 'vote_failed', studentId: session.sid, detail: 'eligibility_not_confirmed', ip, userAgent: ua });
     return res.status(400).json({ error: 'eligibility_not_confirmed' });
   }
   if (!NOMINEES.some((n) => n.id === nomineeId)) {
+    await logEvent({ eventType: 'vote_failed', studentId: session.sid, detail: 'invalid_nominee', ip, userAgent: ua });
     return res.status(400).json({ error: 'invalid_nominee' });
   }
 
@@ -218,31 +269,35 @@ app.post('/api/vote', (req, res) => {
   // fast error message, but that check is skippable by anyone calling this
   // API directly — this server check is the one that actually matters.
   if (typeof lat !== 'number' || typeof lng !== 'number') {
+    await logEvent({ eventType: 'vote_failed', studentId: session.sid, detail: 'location_required', ip, userAgent: ua });
     return res.status(400).json({ error: 'location_required' });
   }
   const distance = distanceMeters(lat, lng, CAMPUS_LAT, CAMPUS_LNG);
   if (distance > CAMPUS_RADIUS_METERS) {
+    await logEvent({ eventType: 'vote_failed', studentId: session.sid, detail: `outside_campus (${Math.round(distance)}m)`, ip, userAgent: ua });
     return res.status(403).json({
       error: 'outside_campus',
       detail: `You're about ${Math.round(distance)}m from campus; voting is only allowed within ${CAMPUS_RADIUS_METERS}m.`,
     });
   }
 
-  const existing = getVote(session.sid);
-  if (existing) return res.status(409).json({ error: 'already_voted' });
+  const existing = await getVote(session.sid);
+  if (existing) {
+    await logEvent({ eventType: 'vote_failed', studentId: session.sid, detail: 'already_voted', ip, userAgent: ua });
+    return res.status(409).json({ error: 'already_voted' });
+  }
 
-  const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
-  const ua = (req.headers['user-agent'] || '').slice(0, 200);
-  castVote(session.sid, nomineeId, ip, ua);
+  await castVote(session.sid, nomineeId, ip, ua);
+  await logEvent({ eventType: 'vote_success', studentId: session.sid, detail: `nomineeId=${nomineeId}, distance=${Math.round(distance)}m, accuracy=${locationAccuracy || 'n/a'}`, ip, userAgent: ua });
 
   res.json({ ok: true });
 });
 
 // ---- Results: live participation while open, full scores/prizes once closed ----
-app.get('/api/results', (req, res) => {
+app.get('/api/results', async (req, res) => {
   const status = votingStatus();
   const counts = {};
-  allVotes().forEach((r) => { counts[r.nominee_id] = r.n; });
+  (await allVotes()).forEach((r) => { counts[r.nominee_id] = r.n; });
   const totalVotes = Object.values(counts).reduce((a, b) => a + b, 0);
 
   if (status !== 'closed') {
@@ -269,5 +324,25 @@ app.get('/api/results', (req, res) => {
   });
 });
 
+// ---- Admin: view the audit log. Protected by a shared secret header, not
+// a real login system — fine for one or two organizers checking in on a
+// contest, not a substitute for real admin authentication if this grows. ----
+app.get('/api/admin/audit-log', requireAdmin, async (req, res) => {
+  const { eventType, studentId, limit, before } = req.query;
+  const rows = await queryAuditLog({ eventType, studentId, limit, before });
+  res.json({ count: rows.length, events: rows });
+});
+
 const port = Number(process.env.PORT || 4000);
-app.listen(port, () => console.log(`Vote API listening on :${port}`));
+
+// Wait for the database tables to exist before accepting any traffic —
+// otherwise the first few requests after a fresh deploy could hit a
+// "relation does not exist" error if they land before init() finishes.
+ready
+  .then(() => {
+    app.listen(port, () => console.log(`Vote API listening on :${port}`));
+  })
+  .catch((err) => {
+    console.error('Failed to initialize database — check DATABASE_URL in .env:', err);
+    process.exit(1);
+  });

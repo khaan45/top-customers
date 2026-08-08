@@ -4,18 +4,29 @@
 // test the "register with today's transaction ID" flow before you have a
 // live payment feed wired in.
 require('dotenv').config();
-const { db } = require('../db');
+const { ready, pool } = require('../db');
 
 const testTransferId = 99999001;
-const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-db.prepare(`
-  INSERT INTO transactions (transfer_id, transfer_date, full_name, mobile, credit)
-  VALUES (?, ?, ?, ?, ?)
-  ON CONFLICT(transfer_id) DO UPDATE SET
-    transfer_date = excluded.transfer_date, full_name = excluded.full_name,
-    mobile = excluded.mobile, credit = excluded.credit, claimed_by_student_id = NULL
-`).run(testTransferId, now, 'Test New Customer', '252699000001', 5000);
+async function main() {
+  await ready;
+  const now = new Date();
 
-console.log(`Seeded a test transaction dated ${now}`);
-console.log(`Try registering with Transfer ID ${testTransferId} and mobile 252699000001`);
+  await pool.query(
+    `INSERT INTO transactions (transfer_id, transfer_date, full_name, mobile, credit)
+     VALUES ($1, $2, $3, $4, $5)
+     ON CONFLICT (transfer_id) DO UPDATE SET
+       transfer_date = EXCLUDED.transfer_date, full_name = EXCLUDED.full_name,
+       mobile = EXCLUDED.mobile, credit = EXCLUDED.credit, claimed_by_student_id = NULL`,
+    [testTransferId, now, 'Test New Customer', '252699000001', 5000]
+  );
+
+  console.log(`Seeded a test transaction dated ${now.toISOString()}`);
+  console.log(`Try registering with Transfer ID ${testTransferId} and mobile 252699000001`);
+  await pool.end();
+}
+
+main().catch((err) => {
+  console.error('Failed:', err);
+  process.exit(1);
+});

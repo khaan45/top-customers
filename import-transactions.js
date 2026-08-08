@@ -13,7 +13,7 @@
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
-const { db } = require('../db');
+const { ready, pool } = require('../db');
 
 const csvPath = process.argv[2];
 if (!csvPath) {
@@ -21,27 +21,45 @@ if (!csvPath) {
   process.exit(1);
 }
 
-const lines = fs.readFileSync(path.resolve(csvPath), 'utf8').trim().split('\n');
-const header = lines[0].split(',');
-const rows = lines.slice(1).map((line) => {
-  // simple CSV split — fine here since none of these fields contain commas
-  const vals = line.split(',');
-  const obj = {};
-  header.forEach((h, i) => { obj[h.trim()] = vals[i]; });
-  return obj;
+async function main() {
+  await ready;
+
+  const lines = fs.readFileSync(path.resolve(csvPath), 'utf8').trim().split('\n');
+  const header = lines[0].split(',').map((h) => h.trim());
+  const rows = lines.slice(1).map((line) => {
+    // simple CSV split — fine here since none of these fields contain commas
+    const vals = line.split(',');
+    const obj = {};
+    header.forEach((h, i) => { obj[h] = vals[i]; });
+    return obj;
+  });
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    for (const r of rows) {
+      await client.query(
+        `INSERT INTO transactions (transfer_id, transfer_date, full_name, mobile, credit)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (transfer_id) DO UPDATE SET
+           transfer_date = EXCLUDED.transfer_date, full_name = EXCLUDED.full_name,
+           mobile = EXCLUDED.mobile, credit = EXCLUDED.credit`,
+        [Number(r.transfer_id), r.transfer_date, r.full_name, r.mobile, r.credit ? Number(r.credit) : null]
+      );
+    }
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+
+  console.log(`Imported ${rows.length} transactions from ${csvPath}`);
+  await pool.end();
+}
+
+main().catch((err) => {
+  console.error('Import failed:', err);
+  process.exit(1);
 });
-
-const stmt = db.prepare(`
-  INSERT INTO transactions (transfer_id, transfer_date, full_name, mobile, credit)
-  VALUES (@transfer_id, @transfer_date, @full_name, @mobile, @credit)
-  ON CONFLICT(transfer_id) DO UPDATE SET
-    transfer_date = excluded.transfer_date, full_name = excluded.full_name,
-    mobile = excluded.mobile, credit = excluded.credit
-`);
-
-const insertMany = db.transaction((rows) => {
-  for (const r of rows) stmt.run(r);
-});
-insertMany(rows);
-
-console.log(`Imported ${rows.length} transactions from ${csvPath}`);

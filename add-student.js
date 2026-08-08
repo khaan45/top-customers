@@ -6,7 +6,7 @@
 //
 // Usage: node scripts/add-student.js <mobile> "<fullName>" [purchased=1] [isStaff=0]
 require('dotenv').config();
-const { adminAddStudent } = require('../db');
+const { ready, adminAddStudent, pool } = require('../db');
 
 const [mobile, fullName, purchasedArg, staffArg] = process.argv.slice(2);
 
@@ -18,15 +18,25 @@ if (!mobile || !fullName) {
 const purchased = purchasedArg === undefined ? true : purchasedArg === '1';
 const isStaff = staffArg === '1';
 
-const result = adminAddStudent(fullName, mobile, purchased, isStaff);
+async function main() {
+  await ready;
+  const result = await adminAddStudent(fullName, mobile, purchased, isStaff);
 
-if (!result.ok) {
-  if (result.error === 'already_registered') {
-    console.error(`That mobile number is already registered as ${result.student.student_id} (${result.student.full_name}).`);
-  } else {
-    console.error('Could not add student:', result.error);
+  if (!result.ok) {
+    if (result.error === 'already_registered') {
+      console.error(`That mobile number is already registered as ${result.student.student_id} (${result.student.full_name}).`);
+    } else {
+      console.error('Could not add student:', result.error);
+    }
+    await pool.end();
+    process.exit(1);
   }
-  process.exit(1);
+
+  console.log(`Added ${result.student.full_name} as ${result.student.student_id} (${mobile}).`);
+  await pool.end();
 }
 
-console.log(`Added ${result.student.full_name} as ${result.student.student_id} (${mobile}).`);
+main().catch((err) => {
+  console.error('Failed:', err);
+  process.exit(1);
+});

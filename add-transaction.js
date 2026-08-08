@@ -6,7 +6,7 @@
 // Defaults transfer_date to right now, so it's immediately usable with
 // "register with today's transaction" (findTodaysTransaction in db.js).
 require('dotenv').config();
-const { db } = require('../db');
+const { ready, pool } = require('../db');
 
 const [transferId, mobile, fullName, credit] = process.argv.slice(2);
 
@@ -15,15 +15,25 @@ if (!transferId || !mobile || !fullName) {
   process.exit(1);
 }
 
-const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+async function main() {
+  await ready;
+  const now = new Date();
 
-db.prepare(`
-  INSERT INTO transactions (transfer_id, transfer_date, full_name, mobile, credit)
-  VALUES (?, ?, ?, ?, ?)
-  ON CONFLICT(transfer_id) DO UPDATE SET
-    transfer_date = excluded.transfer_date, full_name = excluded.full_name,
-    mobile = excluded.mobile, credit = excluded.credit, claimed_by_student_id = NULL
-`).run(Number(transferId), now, fullName, mobile, credit ? Number(credit) : null);
+  await pool.query(
+    `INSERT INTO transactions (transfer_id, transfer_date, full_name, mobile, credit)
+     VALUES ($1, $2, $3, $4, $5)
+     ON CONFLICT (transfer_id) DO UPDATE SET
+       transfer_date = EXCLUDED.transfer_date, full_name = EXCLUDED.full_name,
+       mobile = EXCLUDED.mobile, credit = EXCLUDED.credit, claimed_by_student_id = NULL`,
+    [Number(transferId), now, fullName, mobile, credit ? Number(credit) : null]
+  );
 
-console.log(`Added transaction ${transferId} for ${mobile} (${fullName}), dated ${now}`);
-console.log(`Ready to use in the app's "register with today's purchase" flow.`);
+  console.log(`Added transaction ${transferId} for ${mobile} (${fullName}), dated ${now.toISOString()}`);
+  console.log(`Ready to use in the app's "register with today's purchase" flow.`);
+  await pool.end();
+}
+
+main().catch((err) => {
+  console.error('Failed:', err);
+  process.exit(1);
+});
