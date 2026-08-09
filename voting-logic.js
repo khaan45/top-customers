@@ -134,12 +134,17 @@ async function hasVoted(db, studentId) {
 async function recordVote(db, studentId, candidateId) {
   const ballotToken = crypto.randomUUID();
 
-  // Wrap in a transaction so a partial failure can't create an
-  // orphaned ballot or a voter record with no matching ballot.
-  await db.query("BEGIN");
+  // Use a single dedicated connection for the whole transaction. Calling
+  // db.query() directly (when db is a pg Pool) can hand out a DIFFERENT
+  // connection per call, which would silently break atomicity — BEGIN on
+  // one connection, the inserts on another, with no real transaction at
+  // all. pool.connect() pins one connection for this whole block instead.
+  const client = await db.connect();
   try {
+    await client.query("BEGIN");
+
     // Ballot: the choice, not linked to the student.
-    await db.query(
+    await client.query(
       "INSERT INTO ballots (ballot_token, candidate_id) VALUES ($1, $2)",
       [ballotToken, candidateId]
     );
@@ -148,27 +153,29 @@ async function recordVote(db, studentId, candidateId) {
     // The UNIQUE/PRIMARY KEY constraint on student_id is the real
     // enforcement against double voting — do not rely on the
     // hasVoted() check alone, since two requests could race past it.
-    await db.query(
+    await client.query(
       "INSERT INTO votes (student_id, ballot_token) VALUES ($1, $2)",
       [studentId, ballotToken]
     );
 
     // Keep students.has_voted in sync so /api/students/lookup can do a
     // fast single-row check without joining against votes.
-    await db.query(
+    await client.query(
       "UPDATE students SET has_voted = TRUE WHERE student_id = $1",
       [studentId]
     );
 
-    await db.query("COMMIT");
+    await client.query("COMMIT");
     return { success: true, ballotToken };
   } catch (err) {
-    await db.query("ROLLBACK");
+    await client.query("ROLLBACK");
     if (err.code === "23505") {
       // unique_violation — this student already has a vote row
       return { success: false, reason: "already_voted" };
     }
     throw err;
+  } finally {
+    client.release();
   }
 }
 
