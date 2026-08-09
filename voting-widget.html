@@ -1,0 +1,1735 @@
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&family=Caveat:wght@600&display=swap">
+<style>
+  #campaign-root, #tcv-root { max-width: 900px; margin: 0 auto; }
+  .campaign-page-wrap { display: flex; flex-direction: column; }
+  #campaign-root { border-radius: 18px 18px 0 0; }
+  #tcv-root { border-radius: 0 0 18px 18px; }
+  .campaign-divider { height: 4px; background: linear-gradient(90deg, #F0A91A, #F0A63D); max-width: 900px; margin: 0 auto; }
+  :root {
+    --navy: #0B2544;
+    --navy-deep: #09153F;
+    --gold: #F0A91A;
+    --cream: #F8F5F0;
+    --white: #FFFFFF;
+    --leaf: #C9902E;
+  }
+  * { box-sizing: border-box; }
+  #campaign-root {
+    font-family: 'Inter', sans-serif;
+    background: var(--cream);
+    border-radius: 18px;
+    overflow: hidden;
+    position: relative;
+  }
+  .cb-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    min-height: 220px;
+  }
+  @media (max-width: 420px) {
+    .cb-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- LEFT: copy ---------- */
+  .cb-left {
+    padding: 22px 24px 18px;
+    position: relative;
+    z-index: 2;
+  }
+  .cb-seal {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 13px;
+  }
+  .cb-seal svg { width: 40px; height: 40px; flex-shrink: 0; }
+  .cb-seal-name {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.03em;
+    color: var(--navy);
+    line-height: 1.15;
+  }
+  .cb-seal-tag {
+    font-family: 'Caveat', cursive;
+    font-size: 14px;
+    color: var(--leaf);
+    font-weight: 600;
+    margin-top: 1px;
+  }
+
+  .cb-headline {
+    font-family: 'Bebas Neue', sans-serif;
+    color: var(--navy);
+    font-size: 32px;
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+    margin: 0;
+  }
+  .cb-headline .vote-word {
+    display: inline-flex;
+    align-items: center;
+    color: var(--gold);
+    gap: 6px;
+  }
+  .cb-check-o {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.85em;
+    height: 0.85em;
+    border-radius: 50%;
+    background: var(--gold);
+    position: relative;
+    top: 0.02em;
+  }
+  .cb-check-o svg { width: 58%; height: 58%; }
+
+  .cb-ribbon-wrap { margin: 10px 0 9px; }
+  .cb-ribbon {
+    display: inline-block;
+    position: relative;
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    padding: 6px 18px;
+  }
+  .cb-ribbon::before, .cb-ribbon::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    border-top: 14px solid var(--navy);
+    border-bottom: 14px solid var(--navy);
+  }
+  .cb-ribbon::before { left: -10px; border-left: 10px solid transparent; }
+  .cb-ribbon::after { right: -10px; border-right: 10px solid transparent; }
+  .cb-ribbon b { color: var(--gold); }
+
+  .cb-sub {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #33415A;
+    max-width: 380px;
+    margin: 4px 0 15px;
+  }
+  .cb-sub b { color: var(--navy); }
+
+  .cb-features {
+    display: flex;
+    gap: 15px;
+  }
+  .cb-feature {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    max-width: 130px;
+  }
+  .cb-feature-ic {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--navy);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 2px var(--gold);
+  }
+  .cb-feature-ic svg { width: 16px; height: 16px; }
+  .cb-feature-label {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 9.5px;
+    letter-spacing: 0.02em;
+    color: var(--navy);
+    line-height: 1.25;
+    text-transform: uppercase;
+  }
+  .cb-divider { width: 1px; align-self: stretch; background: #DCD3C4; margin-top: 4px; }
+
+  /* ---------- RIGHT: scene ---------- */
+  .cb-right {
+    position: relative;
+    background:
+      radial-gradient(circle at 70% 20%, rgba(255,255,255,0.10), transparent 45%),
+      linear-gradient(160deg, #2B1B10 0%, #4A2E17 38%, #6B431F 62%, #8A5A28 100%);
+    overflow: hidden;
+  }
+  /* soft bokeh window-light dots, standing in for the cafeteria interior */
+  .cb-bokeh { position: absolute; inset: 0; opacity: 0.5; }
+  .cb-bokeh span {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,224,153,0.9), rgba(255,224,153,0) 70%);
+  }
+
+  .cb-plate-scene {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 62%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .cb-medal {
+    position: absolute;
+    top: 14px; right: 16px;
+    width: 118px;
+    text-align: center;
+    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.35));
+  }
+  .cb-vote-now {
+    position: absolute;
+    left: 12px;
+    top: 42%;
+    width: 98px;
+    filter: drop-shadow(0 8px 14px rgba(0,0,0,0.35));
+  }
+
+  @media (max-width: 720px) {
+    .cb-right { min-height: 240px; }
+    .cb-medal { width: 96px; top: 12px; right: 12px; }
+    .cb-vote-now { width: 84px; top: auto; bottom: 26%; }
+  }
+
+  /* ---------- FOOTER ---------- */
+  .cb-footer {
+    background: var(--navy-deep);
+    color: var(--white);
+    padding: 13px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    position: relative;
+    z-index: 2;
+  }
+  .cb-footer::before {
+    content: "";
+    position: absolute;
+    top: -22px; left: 0; right: 0; height: 22px;
+    background: var(--cream);
+    border-radius: 0 0 0 0;
+    clip-path: ellipse(60% 100% at 50% 0%);
+    background: var(--gold);
+  }
+  .cb-footer-item { display: flex; align-items: center; gap: 10px; }
+  .cb-footer-ic {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 1.5px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .cb-footer-ic svg { width: 16px; height: 16px; }
+  .cb-footer-label { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+  .cb-footer-value { font-size: 13px; font-weight: 700; color: var(--white); }
+  .cb-footer-note {
+    font-family: 'Caveat', cursive;
+    font-size: 19px;
+    color: rgba(255,255,255,0.85);
+    text-align: right;
+    line-height: 1.3;
+  }
+  @media (max-width: 720px) {
+    .cb-footer { justify-content: center; text-align: center; }
+    .cb-footer-note { text-align: center; width: 100%; }
+  }
+  :root {
+    --teal: #0E3D39;
+    --teal-deep: #082A27;
+    --paper: #FBF3E7;
+    --paper-dim: #EFE4D2;
+    --ink: #1C1C1C;
+    --coral: #E2543D;
+    --amber: #F0A63D;
+    --green: #4C9A6B;
+  }
+  * { box-sizing: border-box; }
+  #tcv-root {
+    background: radial-gradient(circle at 15% 0%, #124A45 0%, var(--teal) 45%, var(--teal-deep) 100%);
+    color: var(--paper);
+    font-family: 'Inter', sans-serif;
+    padding: 0 0 48px;
+    min-height: 100%;
+    border-radius: 18px;
+    overflow: hidden;
+  }
+  .tcv-brand-banner {
+    position: relative;
+    background:
+      radial-gradient(ellipse 70% 90% at 50% -20%, rgba(240,169,26,0.22), transparent 62%),
+      repeating-linear-gradient(45deg, rgba(240,169,26,0.055) 0px, rgba(240,169,26,0.055) 1px, transparent 1px, transparent 13px),
+      linear-gradient(135deg, #0B2544 0%, #1B3F6E 48%, #0B2544 100%);
+    color: var(--paper);
+    text-align: center;
+    padding: 16px 20px 22px;
+  }
+  .tcv-brand-name {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+  .tcv-brand-name svg { flex-shrink: 0; width: 20px; height: 20px; }
+  .tcv-brand-ic { font-size: 16px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); }
+  .tcv-brand-rule {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 150px;
+    margin: 7px auto 6px;
+  }
+  .tcv-brand-rule::before, .tcv-brand-rule::after {
+    content: "";
+    height: 1px;
+    flex: 1;
+    background: linear-gradient(90deg, transparent, var(--gold));
+  }
+  .tcv-brand-rule::after { background: linear-gradient(90deg, var(--gold), transparent); }
+  .tcv-brand-rule-dot {
+    width: 5px; height: 5px;
+    margin: 0 8px;
+    background: var(--gold);
+    transform: rotate(45deg);
+    flex-shrink: 0;
+    box-shadow: 0 0 5px rgba(240,169,26,0.7);
+  }
+  .tcv-brand-tagline {
+    font-family: 'Space Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(251,243,231,0.88);
+    margin-top: 3px;
+  }
+  .tcv-vote-clock {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: rgba(251,243,231,0.75);
+    margin-bottom: 14px;
+    padding: 7px 14px;
+    border: 1px solid rgba(251,243,231,0.18);
+    border-radius: 999px;
+    background: rgba(0,0,0,0.14);
+  }
+  .tcv-vote-clock-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #6FD696;
+    box-shadow: 0 0 5px rgba(111,214,150,0.8);
+    flex-shrink: 0;
+  }
+  .tcv-brand-contest {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: linear-gradient(180deg, #FFCB5C 0%, var(--gold) 55%, #D98F12 100%);
+    color: var(--navy);
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    padding: 7px 18px;
+    border-radius: 999px;
+    margin-top: 13px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.5);
+  }
+  .tcv-brand-contest .tcv-trophy { font-size: 13px; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.25)); }
+  .tcv-brand-contest span.hl { color: var(--white); }
+  .tcv-brand-banner::before, .tcv-brand-banner::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 16px; height: 16px;
+    background: var(--teal-deep);
+    border-radius: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    box-shadow: 0 0 0 2px var(--gold), inset 0 1px 2px rgba(0,0,0,0.4);
+  }
+  .tcv-brand-banner::before { left: -8px; }
+  .tcv-brand-banner::after { right: -8px; }
+  .tcv-scallop {
+    height: 14px;
+    background-image: radial-gradient(circle at 11px 0, var(--teal-deep) 11px, transparent 12px),
+                       radial-gradient(circle at 11px 0, var(--navy) 9px, transparent 10px);
+    background-size: 22px 14px;
+    background-repeat: repeat-x;
+    background-position: 0 0, 0 0;
+    margin-bottom: 16px;
+  }
+  .tcv-body { padding: 14px 18px 0; }
+  .tcv-wrap { max-width: 640px; margin: 0 auto; }
+  .tcv-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--amber);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .tcv-eyebrow::before { content: ""; width: 22px; height: 1px; background: var(--amber); }
+  .tcv-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+    margin: 0 0 8px;
+    color: var(--paper);
+  }
+  .tcv-title span { color: var(--amber); }
+  .tcv-sub {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: rgba(251,243,231,0.75);
+    max-width: 480px;
+    margin: 0 0 22px;
+  }
+  .tcv-rules { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+  .tcv-chip {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--paper);
+    background: rgba(251,243,231,0.08);
+    border: 1px solid rgba(251,243,231,0.18);
+    padding: 7px 12px;
+    border-radius: 999px;
+  }
+  .tcv-chip b { color: var(--amber); }
+
+  /* Voting progress (top) */
+  .tcv-progress {
+    background: rgba(251,243,231,0.06);
+    border: 1px solid rgba(251,243,231,0.16);
+    border-radius: 12px;
+    padding: 14px 16px 16px;
+    margin-bottom: 20px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+  .tcv-progress.tcv-live-flash {
+    background: rgba(111,214,150,0.10);
+    border-color: rgba(111,214,150,0.4);
+  }
+  .tcv-live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Space Mono', monospace;
+    font-size: 8.5px;
+    letter-spacing: 0.08em;
+    color: #6FD696;
+    margin-left: 7px;
+  }
+  .tcv-live-badge-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #6FD696;
+    box-shadow: 0 0 5px rgba(111,214,150,0.8);
+    animation: tcv-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes tcv-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.75); }
+  }
+  .tcv-progress-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 9px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .tcv-progress-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--amber);
+  }
+  .tcv-progress-pct {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: var(--paper);
+  }
+  .tcv-progress-track {
+    height: 10px;
+    background: rgba(251,243,231,0.12);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .tcv-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--coral), var(--amber));
+    width: 0%;
+    border-radius: 999px;
+    transition: width 0.6s cubic-bezier(.2,.8,.2,1);
+  }
+  .tcv-progress-bottom {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10.5px;
+    color: rgba(251,243,231,0.55);
+  }
+  .tcv-progress-bottom b { color: var(--paper); font-family: 'Inter', sans-serif; font-weight: 700; }
+
+  .tcv-progress-divider {
+    height: 1px;
+    background: rgba(251,243,231,0.12);
+    margin: 13px 0 12px;
+  }
+  .tcv-finalist-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .tcv-finalist-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(251,243,231,0.55);
+  }
+  .tcv-finalist-count {
+    font-family: 'Inter', sans-serif;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--paper);
+  }
+  .tcv-finalist-segs {
+    display: flex;
+    gap: 6px;
+  }
+  .tcv-finalist-seg {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+  .tcv-finalist-seg-bar {
+    width: 100%;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(251,243,231,0.14);
+  }
+  .tcv-finalist-seg.has-votes .tcv-finalist-seg-bar {
+    background: linear-gradient(90deg, var(--coral), var(--amber));
+  }
+  .tcv-finalist-seg-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 9.5px;
+    color: rgba(251,243,231,0.4);
+  }
+  .tcv-finalist-seg.has-votes .tcv-finalist-seg-num { color: var(--amber); }
+
+  /* Voting period banner */
+  .tcv-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 22px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11.5px;
+  }
+  .tcv-banner.open { background: rgba(76,154,107,0.16); border: 1px solid rgba(76,154,107,0.4); color: #B9E3C6; }
+  .tcv-banner.before { background: rgba(240,166,61,0.14); border: 1px solid rgba(240,166,61,0.4); color: #F6D9A6; }
+  .tcv-banner.closed { background: rgba(251,243,231,0.08); border: 1px solid rgba(251,243,231,0.2); color: rgba(251,243,231,0.7); }
+  .tcv-banner-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+  .tcv-banner.open .tcv-banner-dot { background: #6FD696; box-shadow: 0 0 0 3px rgba(111,214,150,0.25); }
+  .tcv-banner.before .tcv-banner-dot { background: var(--amber); }
+  .tcv-banner.closed .tcv-banner-dot { background: #9A8F7C; }
+
+  /* Countdown widget */
+  .tcv-countdown {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: rgba(226,84,61,0.1);
+    border: 1px solid rgba(226,84,61,0.3);
+    border-radius: 12px;
+    padding: 16px 14px;
+    margin-bottom: 20px;
+  }
+  .tcv-countdown-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(251,243,231,0.6);
+    width: 100%;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .tcv-countdown-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+  }
+  .tcv-countdown-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 54px;
+  }
+  .tcv-countdown-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    line-height: 1;
+    color: var(--paper);
+    background: var(--teal-deep);
+    border-radius: 8px;
+    padding: 8px 4px;
+    width: 100%;
+    text-align: center;
+    box-shadow: inset 0 0 0 1.5px rgba(240,166,61,0.35);
+    font-variant-numeric: tabular-nums;
+  }
+  .tcv-countdown-unit-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(251,243,231,0.5);
+    margin-top: 5px;
+  }
+  .tcv-countdown-sep {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--coral);
+    padding-bottom: 16px;
+  }
+  @media (max-width: 420px) {
+    .tcv-countdown-unit { min-width: 44px; }
+    .tcv-countdown-num { font-size: 24px; padding: 6px 3px; }
+    .tcv-countdown-sep { font-size: 20px; padding-bottom: 14px; }
+  }
+
+  .tcv-formula {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: rgba(251,243,231,0.6);
+    display: flex; flex-wrap: wrap; align-items: center; gap: 7px;
+    margin: 0 0 20px;
+  }
+  .tcv-formula-label { letter-spacing: 0.1em; color: rgba(251,243,231,0.4); }
+  .tcv-formula-part b { color: var(--amber); }
+
+  .tcv-criteria {
+    background: rgba(251,243,231,0.06);
+    border: 1px solid rgba(251,243,231,0.14);
+    border-radius: 12px;
+    padding: 16px 16px 14px;
+    margin: 0 0 22px;
+  }
+  .tcv-criteria-head {
+    font-family: 'Space Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 12px;
+  }
+  .tcv-criteria-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tcv-criterion { background: rgba(8,42,39,0.5); border-radius: 8px; padding: 11px 12px; }
+  .tcv-criterion-top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
+  .tcv-criterion-name { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12.5px; color: var(--paper); }
+  .tcv-criterion-weight { font-family: 'Bebas Neue', sans-serif; font-size: 20px; }
+  .tcv-criterion-weight.vw { color: var(--coral); }
+  .tcv-criterion-weight.lw { color: var(--amber); }
+  .tcv-criterion-desc { font-size: 11.5px; line-height: 1.45; color: rgba(251,243,231,0.6); }
+  @media (max-width: 380px) { .tcv-criteria-grid { grid-template-columns: 1fr; } }
+
+  .tcv-prize-row {
+    display: flex;
+    gap: 8px;
+  }
+  .tcv-prize {
+    flex: 1;
+    background: rgba(8,42,39,0.5);
+    border-radius: 8px;
+    padding: 10px 6px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+  .tcv-prize-medal {
+    font-size: 18px;
+    font-family: 'Space Mono', monospace;
+    color: rgba(251,243,231,0.55);
+  }
+  .tcv-prize-pos {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgba(251,243,231,0.5);
+  }
+  .tcv-prize-amt {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 19px;
+    color: var(--amber);
+  }
+  @media (max-width: 380px) {
+    .tcv-prize-row { flex-wrap: wrap; }
+    .tcv-prize { flex: 1 1 30%; }
+  }
+
+  /* Eligibility panel */
+  .tcv-elig {
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: 14px;
+    padding: 20px 20px 22px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.28);
+  }
+  .tcv-elig-head {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+  .tcv-elig-sub {
+    font-size: 12.5px;
+    color: #6b5d49;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .tcv-field { margin-bottom: 13px; }
+  .tcv-label {
+    display: block;
+    font-family: 'Space Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #8a7a63;
+    margin-bottom: 5px;
+  }
+  .tcv-input {
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 10px 12px;
+    border-radius: 7px;
+    border: 1.5px solid #E0D3BC;
+    background: #fff;
+    color: var(--ink);
+  }
+  .tcv-input:focus { outline: none; border-color: var(--coral); }
+  .tcv-input.err { border-color: var(--coral); background: #FFF3F0; }
+  .tcv-input.readonly { background: var(--paper-dim); color: #6b5d49; }
+  .tcv-field-tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 8.5px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--green);
+    background: rgba(76,154,107,0.14);
+    border: 1px solid rgba(76,154,107,0.35);
+    border-radius: 999px;
+    padding: 1px 7px;
+    margin-left: 6px;
+  }
+  .tcv-verified-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--paper-dim);
+    border-radius: 8px;
+    padding: 9px 12px;
+    margin-bottom: 13px;
+    font-size: 12px;
+  }
+  .tcv-verified-summary .name { font-weight: 700; color: var(--ink); }
+  .tcv-verified-summary .meta { color: #8a7a63; font-family: 'Space Mono', monospace; font-size: 10.5px; }
+  .tcv-change-link {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: var(--coral);
+    background: none;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+  }
+  .tcv-new-customer {
+    text-align: center;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #6b5d49;
+  }
+  .tcv-new-customer .tcv-change-link { font-size: 12px; font-weight: 600; }
+  .tcv-check-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    margin-bottom: 11px;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: #3a3327;
+  }
+  .tcv-check-row input { margin-top: 2px; width: 15px; height: 15px; accent-color: var(--coral); flex-shrink: 0; }
+  .tcv-captcha-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--paper-dim);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+  }
+  .tcv-captcha-q {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+  .tcv-captcha-row .tcv-input { flex: 1; }
+  .tcv-elig-error {
+    font-size: 12px;
+    color: var(--coral);
+    font-weight: 600;
+    margin: -4px 0 12px;
+    display: none;
+  }
+  .tcv-elig-error.show { display: block; }
+  .tcv-submit {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.03em;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: var(--coral);
+    color: var(--paper);
+    cursor: pointer;
+  }
+  .tcv-submit:hover { background: #cc4632; }
+
+  .tcv-state-note {
+    background: rgba(251,243,231,0.07);
+    border: 1px dashed rgba(251,243,231,0.25);
+    border-radius: 10px;
+    padding: 16px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: rgba(251,243,231,0.75);
+    margin-bottom: 22px;
+  }
+  .tcv-state-note b { color: var(--amber); }
+
+  .tcv-list { display: flex; flex-direction: column; gap: 14px; }
+
+  .tcv-ticket {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 108px;
+    background: var(--paper);
+    border-radius: 10px;
+    overflow: visible;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.28);
+    transition: transform 0.15s ease;
+  }
+  .tcv-ticket:hover { transform: translateY(-2px); }
+  .tcv-ticket.tcv-locked { opacity: 0.55; }
+
+  .tcv-main {
+    padding: 16px 18px 16px 20px;
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+  .tcv-num { font-family: 'Space Mono', monospace; font-size: 11px; color: #8a7a63; letter-spacing: 0.08em; }
+  .tcv-name { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 0.01em; line-height: 1.05; }
+  .tcv-bar-track { height: 8px; background: var(--paper-dim); border-radius: 4px; overflow: hidden; margin-top: 2px; display: flex; }
+  .tcv-bar-votes { height: 100%; background: var(--coral); width: 0%; transition: width 0.5s cubic-bezier(.2,.8,.2,1); }
+  .tcv-bar-loyalty { height: 100%; background: var(--amber); width: 0%; transition: width 0.5s cubic-bezier(.2,.8,.2,1); }
+  .tcv-bar-track.tcv-hidden-bar { background: repeating-linear-gradient(45deg, var(--paper-dim), var(--paper-dim) 4px, #E4D7C0 4px, #E4D7C0 8px); }
+  .tcv-score-row { display: flex; justify-content: space-between; align-items: baseline; margin-top: 1px; }
+  .tcv-score-legend { font-family: 'Space Mono', monospace; font-size: 10px; color: #8a7a63; display: flex; gap: 10px; }
+  .tcv-score-legend span::before { content: "\25CF"; margin-right: 4px; font-size: 8px; }
+  .tcv-score-legend .lv::before { color: var(--coral); }
+  .tcv-score-legend .ll::before { color: var(--amber); }
+  .tcv-score-total { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--ink); }
+  .tcv-score-total span { font-family: 'Space Mono', monospace; font-size: 10px; color: #8a7a63; margin-left: 3px; }
+  .tcv-score-total.tcv-locked-score { font-size: 13px; color: #8a7a63; font-family: 'Space Mono', monospace; }
+
+  .tcv-stub {
+    position: relative;
+    background: var(--teal-deep);
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 0 10px 10px 0;
+  }
+  .tcv-stub::after {
+    content: "";
+    position: absolute; left: -7px; top: -7px; width: 14px; height: 14px;
+    background: radial-gradient(circle, #0A302C 62%, transparent 63%);
+    border-radius: 50%;
+  }
+  .tcv-punch-bottom { position: absolute; left: -7px; bottom: -7px; width: 14px; height: 14px; background: radial-gradient(circle, #0A302C 62%, transparent 63%); border-radius: 50%; }
+
+  .tcv-vote-btn {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 17px;
+    letter-spacing: 0.05em;
+    color: var(--paper);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 10px 6px;
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  }
+  .tcv-vote-btn:focus-visible { outline: 2px solid var(--amber); outline-offset: -3px; }
+  .tcv-vote-btn .tcv-ic { font-size: 18px; }
+  .tcv-vote-btn.voted { color: var(--amber); }
+  .tcv-vote-btn:disabled { cursor: default; opacity: 0.45; }
+  .tcv-vote-btn:not(:disabled):hover { color: var(--amber); }
+
+  .tcv-rank-badge {
+    position: absolute; top: -9px; left: 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+    padding: 3px 9px; border-radius: 999px;
+    color: var(--teal-deep); background: var(--amber);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  .tcv-rank-badge.gold { background: #F0A63D; }
+  .tcv-rank-badge.silver { background: #CFCFCF; }
+  .tcv-rank-badge.bronze { background: #C98A54; }
+  .tcv-rank-badge.teal { background: var(--green); color: var(--paper); }
+
+  .tcv-footer {
+    margin-top: 30px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(251,243,231,0.14);
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+  }
+  .tcv-footer-note { font-family: 'Space Mono', monospace; font-size: 10.5px; color: rgba(251,243,231,0.5); letter-spacing: 0.03em; }
+  .tcv-footer-note2 { font-family: 'Inter', sans-serif; font-size: 10.5px; color: rgba(251,243,231,0.35); }
+
+  .tcv-toast {
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    color: var(--teal-deep);
+    background: var(--amber);
+    padding: 9px 14px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    display: none;
+    font-weight: 600;
+  }
+  .tcv-toast.show { display: block; }
+
+  @media (max-width: 420px) {
+    .tcv-title { font-size: 40px; }
+    .tcv-ticket { grid-template-columns: 1fr 84px; }
+    .tcv-name { font-size: 20px; }
+  }
+</style>
+
+<div id="tcv-root">
+  <div class="tcv-brand-banner">
+    <div class="tcv-brand-name">
+      <span class="tcv-brand-ic">&#127860;</span>
+      <span>University Cafeteria And Snack Bar</span>
+      <span class="tcv-brand-ic">&#127860;</span>
+    </div>
+    <div class="tcv-brand-rule"><span class="tcv-brand-rule-dot"></span></div>
+    <div class="tcv-brand-tagline">Est. on campus &middot; Serving students daily</div>
+    <div class="tcv-brand-contest"><span class="tcv-trophy">&#127942;</span> <span class="hl">Top Customer Vote</span> &mdash; 5 Winners, Real Prizes</div>
+  </div>
+  <div class="tcv-scallop"></div>
+  <div class="tcv-body">
+  <div class="tcv-wrap">
+    <div id="tcv-progress-wrap"></div>
+    <div class="tcv-eyebrow">Semester Contest &middot; Jan&ndash;May 2026</div>
+    <h1 class="tcv-title">Top Customer<br><span>Vote</span></h1>
+    <p class="tcv-sub">Five finalists, picked from this semester's most loyal cafeteria customers &mdash; first names only, full identity kept private. Every finalist wins a prize, ranked by <b style="color:var(--amber)">weighted score</b>.</p>
+
+    <div class="tcv-rules">
+      <div class="tcv-chip"><b>5</b> finalists</div>
+      <div class="tcv-chip"><b>5</b> prizes</div>
+      <div class="tcv-chip"><b>1</b> vote per account</div>
+      <div class="tcv-chip">&#128065;&#65039; First names only</div>
+    </div>
+
+    <div id="tcv-banner" class="tcv-banner"></div>
+    <div id="tcv-countdown-wrap"></div>
+
+    <div class="tcv-formula">
+      <span class="tcv-formula-label">SCORE</span>
+      <span>=</span>
+      <span class="tcv-formula-part"><b>60%</b> votes</span>
+      <span>+</span>
+      <span class="tcv-formula-part"><b>40%</b> semester spend</span>
+    </div>
+
+    <div class="tcv-criteria">
+      <div class="tcv-criteria-head">Voting criteria</div>
+      <div class="tcv-criteria-grid">
+        <div class="tcv-criterion">
+          <div class="tcv-criterion-top">
+            <span class="tcv-criterion-name">Community Vote</span>
+            <span class="tcv-criterion-weight vw">60%</span>
+          </div>
+          <div class="tcv-criterion-desc">Your pick &mdash; one vote per verified customer account.</div>
+        </div>
+        <div class="tcv-criterion">
+          <div class="tcv-criterion-top">
+            <span class="tcv-criterion-name">Semester Loyalty</span>
+            <span class="tcv-criterion-weight lw">40%</span>
+          </div>
+          <div class="tcv-criterion-desc">Total cafeteria spend, Jan&ndash;May 2026, from real payment records.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tcv-criteria">
+      <div class="tcv-criteria-head">Prize structure &mdash; every finalist wins</div>
+      <div class="tcv-prize-row">
+        <div class="tcv-prize"><span class="tcv-prize-medal">&#129351;</span><span class="tcv-prize-pos">1st</span><span class="tcv-prize-amt">$40</span></div>
+        <div class="tcv-prize"><span class="tcv-prize-medal">&#129352;</span><span class="tcv-prize-pos">2nd</span><span class="tcv-prize-amt">$25</span></div>
+        <div class="tcv-prize"><span class="tcv-prize-medal">&#129353;</span><span class="tcv-prize-pos">3rd</span><span class="tcv-prize-amt">$15</span></div>
+        <div class="tcv-prize"><span class="tcv-prize-medal">4th</span><span class="tcv-prize-pos">Finalist</span><span class="tcv-prize-amt">$10</span></div>
+        <div class="tcv-prize"><span class="tcv-prize-medal">5th</span><span class="tcv-prize-pos">Finalist</span><span class="tcv-prize-amt">$10</span></div>
+      </div>
+    </div>
+
+    <div id="tcv-toast" class="tcv-toast"></div>
+
+    <div id="tcv-elig-wrap"></div>
+    <div id="tcv-state-note-wrap"></div>
+
+    <div class="tcv-vote-clock"><span class="tcv-vote-clock-dot"></span>Voting now &middot; <span id="tcv-live-clock-text">&mdash;</span></div>
+
+    <div id="tcv-list" class="tcv-list"></div>
+
+    <div class="tcv-footer">
+      <span class="tcv-footer-note" id="tcv-total"></span>
+      <span class="tcv-footer-note2" id="tcv-footer-right"></span>
+    </div>
+  </div>
+  </div>
+</div>
+
+<script type="module" src="firebase-voting.js"></script>
+<script>
+(function() {
+  // =====================================================================
+  // SET THIS to your deployed backend's URL (see the /vote-backend folder).
+  // Empty string means "same origin as this page" — fine if you serve this
+  // HTML from the same Express app, otherwise point it at your API host.
+  // =====================================================================
+  var API_BASE_URL = "https://top-customer-vote-backend.onrender.com";
+
+  var PRIZES = ["$40", "$25", "$15", "$10", "$10"];
+  var RANK_MEDALS = ["\uD83E\uDD47", "\uD83E\uDD48", "\uD83E\uDD49", "4TH", "5TH"];
+
+  var NOMINEES = [];          // loaded from GET /api/config
+  var VOTING_START = null;
+  var VOTING_END = null;
+  var serverStatus = "before";
+  var CAMPUS = null; // { lat, lng, radiusMeters } — loaded from /api/config
+
+  var listEl = document.getElementById("tcv-list");
+  var totalEl = document.getElementById("tcv-total");
+  var footerRightEl = document.getElementById("tcv-footer-right");
+  var toastEl = document.getElementById("tcv-toast");
+  var bannerEl = document.getElementById("tcv-banner");
+  var progressWrapEl = document.getElementById("tcv-progress-wrap");
+  var countdownWrapEl = document.getElementById("tcv-countdown-wrap");
+  var eligWrapEl = document.getElementById("tcv-elig-wrap");
+  var stateNoteWrapEl = document.getElementById("tcv-state-note-wrap");
+
+  // Session state for the voter currently at this browser (in-memory only —
+  // nothing about "am I verified" or "did I vote" is trusted from the client;
+  // the server is the source of truth on every request).
+  var sessionToken = null;    // issued by /api/session/create, required by /api/vote
+  var votedThisSession = false;
+  var lastResults = { status: "before", totalVotes: 0, participating: [], results: null };
+
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function() { toastEl.classList.remove("show"); }, 3200);
+  }
+
+  async function api(path, opts) {
+    var res = await fetch(API_BASE_URL + path, Object.assign({
+      headers: { "Content-Type": "application/json" },
+    }, opts || {}));
+    var data = null;
+    try { data = await res.json(); } catch (e) { /* empty body */ }
+    if (!res.ok) {
+      var err = new Error((data && data.error) || ("HTTP " + res.status));
+      err.code = data && data.error;
+      err.status = res.status;
+      err.detail = data && data.detail;
+      throw err;
+    }
+    return data;
+  }
+
+  function fmtDate(d) {
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) +
+      " " + d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function daysHoursLeft(target, now) {
+    var ms = Math.max(0, target - now);
+    var days = Math.floor(ms / 86400000);
+    var hours = Math.floor((ms % 86400000) / 3600000);
+    if (days > 0) return days + "d " + hours + "h";
+    var mins = Math.floor((ms % 3600000) / 60000);
+    return hours + "h " + mins + "m";
+  }
+
+  var countdownTicking = false;
+
+  function pad2(n) { return n < 10 ? "0" + n : String(n); }
+
+  function tickCountdown() {
+    if (!countdownWrapEl || !VOTING_START || !VOTING_END) return;
+    var now = new Date();
+    var status = serverStatus;
+    var target = status === "before" ? VOTING_START : VOTING_END;
+    var label = status === "before" ? "Voting opens in" : "Voting closes in";
+
+    if (status === "closed") {
+      countdownWrapEl.innerHTML = "";
+      return;
+    }
+
+    var ms = Math.max(0, target - now);
+    var days = Math.floor(ms / 86400000);
+    var hours = Math.floor((ms % 86400000) / 3600000);
+    var mins = Math.floor((ms % 3600000) / 60000);
+    var secs = Math.floor((ms % 60000) / 1000);
+
+    if (ms <= 0) {
+      // window boundary just passed — let the next full render() pick up the new status
+      return;
+    }
+
+    var units = [
+      { n: days, l: "Days" },
+      { n: hours, l: "Hrs" },
+      { n: mins, l: "Min" },
+      { n: secs, l: "Sec" },
+    ];
+    var rowHtml = units.map(function(u, i) {
+      return (i > 0 ? '<span class="tcv-countdown-sep">:</span>' : '') +
+        '<div class="tcv-countdown-unit">' +
+          '<div class="tcv-countdown-num">' + pad2(u.n) + '</div>' +
+          '<div class="tcv-countdown-unit-label">' + u.l + '</div>' +
+        '</div>';
+    }).join("");
+
+    countdownWrapEl.innerHTML =
+      '<div class="tcv-countdown">' +
+        '<div class="tcv-countdown-label">' + label + '</div>' +
+        '<div class="tcv-countdown-row">' + rowHtml + '</div>' +
+      '</div>';
+  }
+
+  function startCountdown() {
+    if (countdownTicking) return;
+    countdownTicking = true;
+    tickCountdown();
+    setInterval(tickCountdown, 1000);
+  }
+
+  function tickLiveClock() {
+    var el = document.getElementById("tcv-live-clock-text");
+    if (!el) return;
+    var now = new Date();
+    var datePart = now.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+    var timePart = now.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    el.textContent = datePart + " \u00b7 " + timePart;
+  }
+
+  function startLiveClock() {
+    tickLiveClock();
+    setInterval(tickLiveClock, 1000);
+  }
+  startLiveClock();
+
+  function scoreOf(n, counts) {
+    var maxVotes = Math.max.apply(null, NOMINEES.map(function(x) { return counts[x.id] || 0; }).concat([0]));
+    var normVotes = maxVotes > 0 ? (counts[n.id] || 0) / maxVotes : 0;
+    // Spend never reaches the browser — while voting is open we can only show
+    // vote-driven movement; the server computes the real blended score and
+    // sends the final ranking once results are published.
+    return { voteContribution: normVotes * 60, loyaltyContribution: 0, score: normVotes * 60 };
+  }
+
+  function renderBanner(status) {
+    bannerEl.className = "tcv-banner " + status;
+    var html = '<span><span class="tcv-banner-dot"></span>';
+    if (status === "before") html += "Voting opens " + fmtDate(VOTING_START) + "</span>";
+    else if (status === "open") html += "Voting is open &mdash; closes " + fmtDate(VOTING_END) + "</span>";
+    else html += "Voting closed " + fmtDate(VOTING_END) + " &mdash; results below</span>";
+    if (status === "open") html += "<span>" + fmtDate(VOTING_START) + " &rarr; " + fmtDate(VOTING_END) + "</span>";
+    bannerEl.innerHTML = html;
+  }
+
+  function renderProgress(status, totalVotes, participatingIds) {
+    var now = new Date();
+    var pct, rightLabel;
+    if (status === "before") {
+      pct = 0;
+      rightLabel = "Opens in " + daysHoursLeft(VOTING_START, now);
+    } else if (status === "closed") {
+      pct = 100;
+      rightLabel = "Voting ended";
+    } else {
+      var span = VOTING_END - VOTING_START;
+      var elapsed = now - VOTING_START;
+      pct = span > 0 ? Math.min(100, Math.max(0, (elapsed / span) * 100)) : 0;
+      rightLabel = daysHoursLeft(VOTING_END, now) + " left";
+    }
+
+    var participating = participatingIds.length;
+    var revealCounts = status === "closed";
+    var countsById = {};
+    if (revealCounts && lastResults.results) {
+      lastResults.results.forEach(function(r) { countsById[r.id] = r.votes; });
+    }
+
+    var segsHtml = NOMINEES.map(function(n, idx) {
+      var hasVotes = participatingIds.indexOf(n.id) !== -1;
+      return '<div class="tcv-finalist-seg' + (hasVotes ? ' has-votes' : '') + '">' +
+        '<div class="tcv-finalist-seg-bar"></div>' +
+        '<div class="tcv-finalist-seg-num">' + (revealCounts ? (countsById[n.id] || 0) : (idx + 1)) + '</div>' +
+      '</div>';
+    }).join("");
+
+    progressWrapEl.innerHTML =
+      '<div class="tcv-progress">' +
+        '<div class="tcv-progress-top">' +
+          '<span class="tcv-progress-label">Voting Progress<span class="tcv-live-badge"><span class="tcv-live-badge-dot"></span>LIVE</span></span>' +
+          '<span class="tcv-progress-pct">' + Math.round(pct) + '%</span>' +
+        '</div>' +
+        '<div class="tcv-progress-track"><div class="tcv-progress-fill" style="width:' + pct.toFixed(1) + '%"></div></div>' +
+        '<div class="tcv-progress-bottom">' +
+          '<span><b>' + totalVotes + '</b> vote' + (totalVotes === 1 ? '' : 's') + ' cast so far</span>' +
+          '<span>' + rightLabel + '</span>' +
+        '</div>' +
+        '<div class="tcv-progress-divider"></div>' +
+        '<div class="tcv-finalist-head">' +
+          '<span class="tcv-finalist-label">Finalist activity</span>' +
+          '<span class="tcv-finalist-count">' + participating + ' of ' + NOMINEES.length + ' have votes</span>' +
+        '</div>' +
+        '<div class="tcv-finalist-segs">' + segsHtml + '</div>' +
+      '</div>';
+  }
+
+  // ---- Eligibility flow — Student ID + mobile checked against your real DB.
+  // No OTP: entering a phone number that matches the roster is enough to
+  // confirm eligibility here. This trades away proof that the person typing
+  // the number is its actual owner — anyone who knows/guesses a registered
+  // number can create a session for that student. If that risk matters for
+  // your contest, keep at least one other guard (e.g. one vote per phone
+  // enforced server-side, IP/device throttling, or a manual account claim
+  // step) since this flow alone won't catch it. ----
+  var otpStage = "enter";   // "enter" -> "confirm"
+  var otpMobile = "", otpStudentId = "", otpFullName = null;
+  var chkState = { account: false, age: false, staff: false };
+
+  function renderEligibilityForm() {
+    if (otpStage === "enter") {
+      eligWrapEl.innerHTML =
+        '<div class="tcv-elig">' +
+          '<div class="tcv-elig-head">Verify to vote</div>' +
+          '<div class="tcv-elig-sub">Enter your Student ID and registered mobile number &mdash; both must match our records.</div>' +
+          '<div class="tcv-field">' +
+            '<label class="tcv-label">Student ID</label>' +
+            '<input type="text" class="tcv-input" id="tcv-sid-input" placeholder="e.g. STU0001">' +
+          '</div>' +
+          '<div class="tcv-field">' +
+            '<label class="tcv-label">Registered Mobile Number</label>' +
+            '<input type="text" class="tcv-input" id="tcv-acc-input" placeholder="e.g. 25263xxxxxxx">' +
+          '</div>' +
+          '<div class="tcv-elig-error" id="tcv-elig-error"></div>' +
+          '<button class="tcv-submit" id="tcv-send-otp">Verify</button>' +
+          '<div class="tcv-new-customer">New customer? <button type="button" class="tcv-change-link" id="tcv-go-register">Register with today\'s purchase</button></div>' +
+        '</div>';
+      document.getElementById("tcv-send-otp").addEventListener("click", onLookupSubmit);
+      document.getElementById("tcv-go-register").addEventListener("click", function() {
+        otpStage = "register";
+        renderEligibilityForm();
+      });
+    } else if (otpStage === "register") {
+      eligWrapEl.innerHTML =
+        '<div class="tcv-elig">' +
+          '<div class="tcv-elig-head">Register with today\'s purchase</div>' +
+          '<div class="tcv-elig-sub">Made a purchase today but this is your first time voting? Enter the mobile number and Transfer ID from today\'s receipt to create your account on the spot.</div>' +
+          '<div class="tcv-field">' +
+            '<label class="tcv-label">Mobile Number</label>' +
+            '<input type="text" class="tcv-input" id="tcv-reg-mobile" placeholder="e.g. 25263xxxxxxx">' +
+          '</div>' +
+          '<div class="tcv-field">' +
+            '<label class="tcv-label">Transfer ID (from today\'s receipt)</label>' +
+            '<input type="text" inputmode="numeric" class="tcv-input" id="tcv-reg-transfer" placeholder="e.g. 13770304514">' +
+          '</div>' +
+          '<div class="tcv-elig-error" id="tcv-elig-error"></div>' +
+          '<button class="tcv-submit" id="tcv-register-submit">Register &amp; continue</button>' +
+          '<div class="tcv-new-customer"><button type="button" class="tcv-change-link" id="tcv-back-to-enter">Back</button></div>' +
+        '</div>';
+      document.getElementById("tcv-register-submit").addEventListener("click", onRegisterSubmit);
+      document.getElementById("tcv-back-to-enter").addEventListener("click", function() {
+        otpStage = "enter";
+        renderEligibilityForm();
+      });
+    } else {
+      var maskedMobile = otpMobile.length > 4 ? otpMobile.slice(0, -4).replace(/./g, "\u2022") + otpMobile.slice(-4) : otpMobile;
+      eligWrapEl.innerHTML =
+        '<div class="tcv-elig">' +
+          '<div class="tcv-elig-head">Confirm to vote</div>' +
+          '<div class="tcv-elig-sub">We check a few things before your vote counts &mdash; this keeps the contest fair for every real student.</div>' +
+          '<div class="tcv-verified-summary">' +
+            '<div><div class="name">' + otpFullName + '<span class="tcv-field-tag">From database</span></div>' +
+            '<div class="meta">ID ' + otpStudentId + ' &middot; ' + maskedMobile + '</div></div>' +
+            '<button class="tcv-change-link" id="tcv-otp-change">Change</button>' +
+          '</div>' +
+          '<div class="tcv-check-row"><input type="checkbox" id="tcv-chk-account"><span>I have a registered customer account and made at least one purchase this semester.</span></div>' +
+          '<div class="tcv-check-row"><input type="checkbox" id="tcv-chk-age"><span>I am 18 years of age or older.</span></div>' +
+          '<div class="tcv-check-row"><input type="checkbox" id="tcv-chk-staff"><span>I am not an employee, administrator, or organizer of this contest.</span></div>' +
+          '<div class="tcv-elig-error" id="tcv-elig-error"></div>' +
+          '<button class="tcv-submit" id="tcv-elig-submit">Confirm &amp; continue</button>' +
+        '</div>';
+      document.getElementById("tcv-otp-change").addEventListener("click", function() {
+        otpStage = "enter";
+        renderEligibilityForm();
+      });
+      document.getElementById("tcv-elig-submit").addEventListener("click", onEligibilitySubmit);
+    }
+  }
+
+  // Verifies Student ID + registered mobile against Firestore. Per the
+  // security rule, BOTH must match the same student record, that record's
+  // status must be Active, and hasVoted must still be false — a mismatch
+  // on any of those is treated as a single generic failure so this can't
+  // be used to enumerate valid Student IDs or mobile numbers.
+  async function verifyStudent(studentId, mobile, showErrorsOn) {
+    var errEl = document.getElementById("tcv-elig-error");
+    try {
+      var student = await window.tcvFirebase.verifyStudent(studentId, mobile);
+      otpStudentId = studentId;
+      otpFullName = student.name;
+      return true;
+    } catch (err) {
+      var msg = {
+        not_found: "We couldn't verify that Student ID and mobile number together. Double-check both and try again.",
+        already_voted: "This Student ID has already voted.",
+        inactive: "This student account isn't active. Contact an administrator.",
+        missing_fields: "Enter both your Student ID and mobile number.",
+      }[err.code] || "Something went wrong verifying your account. Try again.";
+      if (errEl) { errEl.textContent = msg; errEl.classList.add("show"); }
+      if (showErrorsOn) showErrorsOn.forEach(function(el) { el.classList.add("err"); });
+      return false;
+    }
+  }
+
+  async function onLookupSubmit() {
+    var sidInput = document.getElementById("tcv-sid-input").value.trim();
+    var accInput = document.getElementById("tcv-acc-input").value.trim();
+    var errEl = document.getElementById("tcv-elig-error");
+    var sidEl = document.getElementById("tcv-sid-input");
+    var accEl = document.getElementById("tcv-acc-input");
+    var btn = document.getElementById("tcv-send-otp");
+    sidEl.classList.remove("err");
+    accEl.classList.remove("err");
+    errEl.classList.remove("show");
+
+    if (!sidInput || accInput.length < 6) {
+      errEl.textContent = "Enter both your Student ID and registered mobile number.";
+      errEl.classList.add("show");
+      if (!sidInput) sidEl.classList.add("err");
+      if (accInput.length < 6) accEl.classList.add("err");
+      return;
+    }
+
+    otpMobile = accInput;
+    btn.disabled = true;
+    btn.textContent = "Verifying\u2026";
+    var ok = await verifyStudent(sidInput, accInput, [sidEl, accEl]);
+    if (ok) {
+      otpStage = "confirm";
+      renderEligibilityForm();
+    } else {
+      btn.disabled = false;
+      btn.textContent = "Verify";
+    }
+  }
+
+  async function onRegisterSubmit() {
+    var mobileInput = document.getElementById("tcv-reg-mobile").value.trim();
+    var transferInput = document.getElementById("tcv-reg-transfer").value.trim();
+    var errEl = document.getElementById("tcv-elig-error");
+    var mobileEl = document.getElementById("tcv-reg-mobile");
+    var transferEl = document.getElementById("tcv-reg-transfer");
+    var btn = document.getElementById("tcv-register-submit");
+    mobileEl.classList.remove("err");
+    transferEl.classList.remove("err");
+    errEl.classList.remove("show");
+
+    if (mobileInput.length < 6) {
+      errEl.textContent = "Enter the mobile number from today's purchase.";
+      errEl.classList.add("show");
+      mobileEl.classList.add("err");
+      return;
+    }
+    if (transferInput.length < 4) {
+      errEl.textContent = "Enter the Transfer ID from today's receipt.";
+      errEl.classList.add("show");
+      transferEl.classList.add("err");
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Registering\u2026";
+    try {
+      var regData = await api("/api/students/register", {
+        method: "POST",
+        body: JSON.stringify({ mobile: mobileInput, transferId: transferInput }),
+      });
+      otpMobile = mobileInput;
+      otpStudentId = regData.studentId;
+      otpFullName = regData.fullName;
+      showToast("Account created.");
+      otpStage = "confirm";
+      renderEligibilityForm();
+    } catch (err) {
+      var msg = {
+        transaction_not_found: "That Transfer ID wasn't found. Double check today's receipt.",
+        transaction_already_used: "That Transfer ID has already been used to register an account.",
+        transaction_not_today: "That transaction isn't from today. Registration only works with today's purchase.",
+        transaction_mobile_mismatch: "That mobile number doesn't match the one on this transaction.",
+        already_registered: "This mobile number is already registered — try Continue instead of registering.",
+      }[err.code] || "Couldn't register that account. Check the details and try again.";
+      errEl.textContent = msg;
+      errEl.classList.add("show");
+      btn.disabled = false;
+      btn.textContent = "Register & continue";
+    }
+  }
+
+  async function onEligibilitySubmit() {
+    var chkAccount = document.getElementById("tcv-chk-account").checked;
+    var chkAge = document.getElementById("tcv-chk-age").checked;
+    var chkStaff = document.getElementById("tcv-chk-staff").checked;
+    var errEl = document.getElementById("tcv-elig-error");
+    var btn = document.getElementById("tcv-elig-submit");
+
+    errEl.classList.remove("show");
+
+    if (!chkAccount || !chkAge || !chkStaff) {
+      errEl.textContent = "Please confirm all three eligibility checkboxes.";
+      errEl.classList.add("show");
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Confirming\u2026";
+    try {
+      // Re-verify right before unlocking voting — hasVoted could have
+      // flipped to true in the time since the first check (e.g. the
+      // student voted in another tab).
+      await window.tcvFirebase.verifyStudent(otpStudentId, otpMobile);
+      sessionToken = otpStudentId; // acts as "verified" flag for this session; the real gate is the Firestore transaction in castVote
+      chkState = { account: chkAccount, age: chkAge, staff: chkStaff };
+      showToast("Confirmed. You can cast your one vote below.");
+      await refreshResults();
+      render();
+    } catch (err) {
+      var msg = {
+        already_voted: "This account has already voted.",
+        not_found: "Couldn't confirm that account. Please start over.",
+        inactive: "This student account isn't active. Contact an administrator.",
+      }[err.code] || "Couldn't confirm eligibility. Try again.";
+      errEl.textContent = msg;
+      errEl.classList.add("show");
+      btn.disabled = false;
+      btn.textContent = "Confirm & continue";
+    }
+  }
+
+  function renderStateNote(status) {
+    if (status === "before") {
+      stateNoteWrapEl.innerHTML = '<div class="tcv-state-note">Voting hasn\'t opened yet. Come back on <b>' + fmtDate(VOTING_START) + '</b> to cast your vote &mdash; finalists are listed below.</div>';
+    } else if (status === "closed") {
+      stateNoteWrapEl.innerHTML = '<div class="tcv-state-note">Voting closed on <b>' + fmtDate(VOTING_END) + '</b>. Results are verified and published below.</div>';
+    } else if (votedThisSession) {
+      stateNoteWrapEl.innerHTML = '<div class="tcv-state-note">Your vote is recorded and final &mdash; it can\'t be changed. Full results publish when voting closes.</div>';
+    } else {
+      stateNoteWrapEl.innerHTML = "";
+    }
+  }
+
+  async function refreshResults() {
+    try {
+      lastResults = await api("/api/results");
+    } catch (err) {
+      lastResults = { status: serverStatus, totalVotes: 0, participating: [], results: null };
+    }
+  }
+
+  // ---- Live polling: keeps the Voting Progress card + running total current
+  // for anyone just watching the page, without touching the eligibility form
+  // (a full render() would wipe out whatever someone's mid-typing there). ----
+  var livePolling = false;
+
+  function flashLiveUpdate() {
+    if (!progressWrapEl) return;
+    progressWrapEl.classList.add("tcv-live-flash");
+    setTimeout(function() { progressWrapEl.classList.remove("tcv-live-flash"); }, 700);
+  }
+
+  async function pollLiveResults() {
+    var prevTotal = lastResults.totalVotes || 0;
+    await refreshResults();
+    renderProgress(serverStatus, lastResults.totalVotes || 0, lastResults.participating || []);
+    if (totalEl) {
+      var t = lastResults.totalVotes || 0;
+      totalEl.textContent = t + (t === 1 ? " vote recorded" : " votes recorded");
+    }
+    if ((lastResults.totalVotes || 0) !== prevTotal) flashLiveUpdate();
+  }
+
+  function startLivePolling() {
+    if (livePolling) return;
+    livePolling = true;
+    setInterval(pollLiveResults, 12000);
+  }
+
+  function render() {
+    var status = serverStatus;
+    renderBanner(status);
+    renderProgress(status, lastResults.totalVotes || 0, lastResults.participating || []);
+
+    var showEligForm = status === "open" && !sessionToken;
+    var showResultsNumbers = status === "closed" && lastResults.results;
+    var votingActive = status === "open" && sessionToken && !votedThisSession;
+
+    eligWrapEl.innerHTML = "";
+    if (showEligForm) renderEligibilityForm();
+
+    renderStateNote(status);
+
+    var resultsById = {};
+    if (showResultsNumbers) {
+      lastResults.results.forEach(function(r) { resultsById[r.id] = r; });
+    }
+
+    listEl.innerHTML = "";
+    NOMINEES.forEach(function(n, idx) {
+      var r = resultsById[n.id];
+      var rank = r ? r.rank - 1 : -1;
+      var isVoted = votedThisSession && window.__lastVotedNomineeId === n.id;
+      var canVoteThis = votingActive;
+
+      var ticket = document.createElement("div");
+      ticket.className = "tcv-ticket" + (status !== "closed" && !canVoteThis && !isVoted ? " tcv-locked" : "");
+
+      var badgeHtml = "";
+      if (showResultsNumbers && r) {
+        var medal = RANK_MEDALS[rank];
+        var tier = rank === 0 ? "gold" : rank === 1 ? "silver" : rank === 2 ? "bronze" : "teal";
+        badgeHtml = '<div class="tcv-rank-badge ' + tier + '">' + medal + " &middot; " + r.prize + '</div>';
+      }
+
+      var barHtml, scoreHtml, legendHtml;
+      if (showResultsNumbers && r) {
+        var votePct = lastResults.totalVotes > 0 ? (r.votes / lastResults.totalVotes) * 100 : 0;
+        barHtml = '<div class="tcv-bar-track">' +
+            '<div class="tcv-bar-votes" style="width:' + Math.min(100, votePct * 1.2).toFixed(1) + '%"></div>' +
+          '</div>';
+        legendHtml = '<span class="lv">' + r.votes + (r.votes === 1 ? " vote" : " votes") + '</span><span class="ll">Loyalty</span>';
+        scoreHtml = '<div class="tcv-score-total">' + Math.round(r.score) + '<span>score</span></div>';
+      } else {
+        barHtml = '<div class="tcv-bar-track tcv-hidden-bar"></div>';
+        legendHtml = '<span class="lv">Hidden</span><span class="ll">until close</span>';
+        scoreHtml = '<div class="tcv-score-total tcv-locked-score">&mdash;</div>';
+      }
+
+      var btnLabel, btnDisabled, btnIcon;
+      if (isVoted) { btnLabel = "VOTED"; btnDisabled = true; btnIcon = "&#9733;"; }
+      else if (status === "closed") { btnLabel = "CLOSED"; btnDisabled = true; btnIcon = "&#9679;"; }
+      else if (status === "before") { btnLabel = "SOON"; btnDisabled = true; btnIcon = "&#9734;"; }
+      else if (!sessionToken) { btnLabel = "VERIFY"; btnDisabled = true; btnIcon = "&#9734;"; }
+      else if (votedThisSession) { btnLabel = "LOCKED"; btnDisabled = true; btnIcon = "&#9679;"; }
+      else { btnLabel = "VOTE"; btnDisabled = false; btnIcon = "&#9734;"; }
+
+      ticket.innerHTML =
+        badgeHtml +
+        '<div class="tcv-main">' +
+          '<div class="tcv-num">TICKET NO. 0' + (idx + 1) + '</div>' +
+          '<div class="tcv-name">' + n.firstName + '</div>' +
+          barHtml +
+          '<div class="tcv-score-row"><div class="tcv-score-legend">' + legendHtml + '</div>' + scoreHtml + '</div>' +
+        '</div>' +
+        '<div class="tcv-stub">' +
+          '<button class="tcv-vote-btn' + (isVoted ? ' voted' : '') + '" data-id="' + n.id + '"' + (btnDisabled ? ' disabled' : '') + '>' +
+            '<span class="tcv-ic">' + btnIcon + '</span><span>' + btnLabel + '</span>' +
+          '</button>' +
+          '<div class="tcv-punch-bottom"></div>' +
+        '</div>';
+
+      listEl.appendChild(ticket);
+    });
+
+    listEl.querySelectorAll(".tcv-vote-btn:not(:disabled)").forEach(function(btn) {
+      btn.addEventListener("click", function() { castVote(btn.getAttribute("data-id")); });
+    });
+
+    totalEl.textContent = (lastResults.totalVotes || 0) + ((lastResults.totalVotes || 0) === 1 ? " vote recorded" : " votes recorded");
+    footerRightEl.textContent = showResultsNumbers ? "Results verified & published" : "Results hidden until voting closes";
+  }
+
+  // ---- Location: voters must be near campus. Client-side check here is
+  // just for a fast, friendly error — the server re-checks independently
+  // in /api/vote, since a client-side-only check is trivially bypassable
+  // by anyone calling the API directly. ----
+  function getBrowserLocation() {
+    return new Promise(function(resolve, reject) {
+      if (!navigator.geolocation) {
+        reject(new Error("geolocation_unsupported"));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        function(pos) {
+          resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
+        },
+        function(err) {
+          reject(err);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+      );
+    });
+  }
+
+  function distanceMeters(lat1, lng1, lat2, lng2) {
+    var R = 6371000;
+    var toRad = function(d) { return (d * Math.PI) / 180; };
+    var dLat = toRad(lat2 - lat1);
+    var dLng = toRad(lng2 - lng1);
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  async function castVote(id) {
+    if (!sessionToken || votedThisSession || serverStatus !== "open") return;
+
+    var btns = listEl.querySelectorAll(".tcv-vote-btn");
+    btns.forEach(function(b) { b.disabled = true; });
+
+    var loc;
+    try {
+      showToast("Checking your location\u2026");
+      loc = await getBrowserLocation();
+    } catch (err) {
+      var locMsg = err.code === 1
+        ? "Location access was denied. Enable location for this site and try again \u2014 voting is campus-only."
+        : "Couldn't get your location. Make sure location services are on and try again.";
+      showToast(locMsg);
+      btns.forEach(function(b) { b.disabled = false; });
+      return;
+    }
+
+    if (CAMPUS && CAMPUS.lat && CAMPUS.lng) {
+      var dist = distanceMeters(loc.lat, loc.lng, CAMPUS.lat, CAMPUS.lng);
+      if (dist > CAMPUS.radiusMeters) {
+        showToast("You're about " + Math.round(dist) + "m from campus \u2014 voting is only allowed within " + CAMPUS.radiusMeters + "m.");
+        btns.forEach(function(b) { b.disabled = false; });
+        return;
+      }
+    }
+
+    try {
+      // The Firestore transaction is the real enforcement point: it
+      // re-reads hasVoted at write time and rejects atomically if it's
+      // already true, so two near-simultaneous submits (two tabs, a
+      // double-tap) can't both succeed even though the UI already
+      // disabled the buttons above.
+      await window.tcvFirebase.submitVote(otpStudentId, id);
+      votedThisSession = true;
+      window.__lastVotedNomineeId = id;
+      var idx = NOMINEES.findIndex(function(n) { return n.id === id; });
+      showToast("Vote recorded for " + NOMINEES[idx].firstName + ". Your vote is final.");
+      await refreshResults();
+      render();
+    } catch (err) {
+      var msg = {
+        already_voted: "This account has already voted.",
+        voting_closed: "Voting has closed.",
+        voting_before: "Voting hasn't opened yet.",
+        not_found: "Your verification expired — please verify again.",
+      }[err.code] || "Couldn't record your vote — try again.";
+      showToast(msg);
+      if (err.code === "not_found" || err.code === "already_voted") {
+        sessionToken = null;
+        otpStage = "enter";
+      }
+      render();
+    }
+  }
+
+  async function init() {
+    try {
+      var cfg = await api("/api/config");
+      NOMINEES = cfg.nominees;
+      VOTING_START = new Date(cfg.votingStart);
+      VOTING_END = new Date(cfg.votingEnd);
+      serverStatus = cfg.status;
+      CAMPUS = cfg.campus || null;
+    } catch (err) {
+      eligWrapEl.innerHTML =
+        '<div class="tcv-elig"><div class="tcv-elig-head">Can\'t reach the vote server</div>' +
+        '<div class="tcv-elig-sub">This app needs its backend running at <code>' + API_BASE_URL + '</code>. ' +
+        'See /vote-backend for setup — deploy it, then set API_BASE_URL at the top of this file to its real URL.</div></div>';
+      return;
+    }
+    await refreshResults();
+    render();
+    startCountdown();
+    startLivePolling();
+  }
+
+  init();
+})();
+</script>
