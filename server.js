@@ -39,7 +39,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-registerConfigRoute(app);
+registerConfigRoute(app, db);
 registerResultsRoute(app, db);
 registerLookupRoute(app, db);
 registerSessionRoute(app, db);

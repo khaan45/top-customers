@@ -51,6 +51,7 @@ def main():
         idx_name = header.index("STUDENT_NAME")
         idx_mobile = header.index("MOBILE")
         idx_status = header.index("STATUS")
+        idx_spend = header.index("TOTAL_SPEND_SLSH")
     except ValueError as e:
         print(f"Expected column not found in sheet header {header}: {e}")
         return 1
@@ -68,6 +69,7 @@ def main():
         name = row[idx_name]
         mobile_raw = row[idx_mobile]
         status = row[idx_status] or "Active"
+        spend = row[idx_spend] or 0
 
         if not student_id or str(student_id).strip() == "":
             skipped_no_id += 1
@@ -78,21 +80,22 @@ def main():
             skipped_bad_phone += 1
             continue
 
-        to_insert.append((str(student_id).strip(), str(name).strip(), phone, str(status).strip()))
+        to_insert.append((str(student_id).strip(), str(name).strip(), phone, str(status).strip(), int(spend)))
 
     conn = psycopg2.connect(args.db)
     cur = conn.cursor()
-    for student_id, full_name, phone, status in to_insert:
+    for student_id, full_name, phone, status, spend in to_insert:
         cur.execute(
             """
-            INSERT INTO students (student_id, full_name, phone_number, status, has_voted)
-            VALUES (%s, %s, %s, %s, FALSE)
+            INSERT INTO students (student_id, full_name, phone_number, status, has_voted, semester_spend_slsh)
+            VALUES (%s, %s, %s, %s, FALSE, %s)
             ON CONFLICT (student_id) DO UPDATE
               SET full_name = EXCLUDED.full_name,
                   phone_number = EXCLUDED.phone_number,
-                  status = EXCLUDED.status
+                  status = EXCLUDED.status,
+                  semester_spend_slsh = EXCLUDED.semester_spend_slsh
             """,
-            (student_id, full_name, phone, status),
+            (student_id, full_name, phone, status, spend),
         )
         imported += 1
     conn.commit()

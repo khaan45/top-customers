@@ -3,12 +3,13 @@
 -- ============================================================
 
 CREATE TABLE students (
-    student_id      VARCHAR(10) PRIMARY KEY,      -- e.g. 'STU-00001'
-    full_name       VARCHAR(150) NOT NULL,
-    phone_number    VARCHAR(20) NOT NULL UNIQUE,  -- normalized format, e.g. '252634449111'
-    status          VARCHAR(20) NOT NULL DEFAULT 'Active', -- 'Active' | 'Not Enrolled' | 'Graduated' | 'On Leave'
-    has_voted       BOOLEAN NOT NULL DEFAULT FALSE, -- kept in sync with a row existing in votes; see recordVote()
-    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    student_id          VARCHAR(10) PRIMARY KEY,      -- e.g. 'STU-00001'
+    full_name           VARCHAR(150) NOT NULL,
+    phone_number        VARCHAR(20) NOT NULL UNIQUE,  -- normalized format, e.g. '252634449111'
+    status              VARCHAR(20) NOT NULL DEFAULT 'Active', -- 'Active' | 'Not Enrolled' | 'Graduated' | 'On Leave'
+    has_voted           BOOLEAN NOT NULL DEFAULT FALSE, -- kept in sync with a row existing in votes; see recordVote()
+    semester_spend_slsh INTEGER NOT NULL DEFAULT 0,    -- total cafeteria spend, used to auto-pick the most loyal customers
+    created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- One-time codes sent to a phone before letting a vote through.
