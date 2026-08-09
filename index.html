@@ -1115,7 +1115,6 @@
   var VOTING_START = null;
   var VOTING_END = null;
   var serverStatus = "before";
-  var CAMPUS = null; // { lat, lng, radiusMeters } — loaded from /api/config
 
   var listEl = document.getElementById("tcv-list");
   var totalEl = document.getElementById("tcv-total");
@@ -1311,251 +1310,126 @@
       '</div>';
   }
 
-  // ---- Eligibility / OTP flow — Student ID + mobile checked against your
-  // real DB, then a real 6-digit code is generated and delivered by
-  // WhatsApp. Both the send and the check happen on the backend — this
-  // page just calls the two endpoints. ----
-  var otpStage = "enter";   // "enter" -> "sent"
-  var otpStudentId = "", otpMobile = "", otpFullName = null;
-  var otpChannel = "whatsapp";  // "whatsapp" | "sms"
+  // ---- Eligibility flow — Student ID + mobile checked together against
+  // the roster. No OTP: entering an ID/mobile pair that matches is enough
+  // to confirm eligibility here. This is stronger than mobile-only (an
+  // attacker needs both pieces, not just a guessed phone number), but
+  // still doesn't prove the person typing them is the account's actual
+  // owner. The one vote per student is enforced server-side either way
+  // (see /api/session/create and /api/vote), so the worst case is someone
+  // using up a classmate's single vote, not casting extra ones. ----
+  var otpStage = "enter";   // "enter" -> "confirm"
+  var otpMobile = "", otpStudentId = "", otpFullName = null;
   var chkState = { account: false, age: false, staff: false };
-  var otpResendAt = 0;
 
   function renderEligibilityForm() {
     if (otpStage === "enter") {
       eligWrapEl.innerHTML =
         '<div class="tcv-elig">' +
           '<div class="tcv-elig-head">Verify to vote</div>' +
-          '<div class="tcv-elig-sub">Enter your mobile number and choose how you\'d like to receive your one-time code &mdash; we\'ll look up your account automatically.</div>' +
+          '<div class="tcv-elig-sub">Enter your Student ID and registered mobile number &mdash; both must match our records.</div>' +
           '<div class="tcv-field">' +
-            '<label class="tcv-label">Mobile Number</label>' +
+            '<label class="tcv-label">Student ID</label>' +
+            '<input type="text" class="tcv-input" id="tcv-sid-input" placeholder="e.g. STU0001">' +
+          '</div>' +
+          '<div class="tcv-field">' +
+            '<label class="tcv-label">Registered Mobile Number</label>' +
             '<input type="text" class="tcv-input" id="tcv-acc-input" placeholder="e.g. 25263xxxxxxx">' +
           '</div>' +
-          '<div class="tcv-field">' +
-            '<label class="tcv-label">Send code via</label>' +
-            '<div class="tcv-channel-row">' +
-              '<button type="button" class="tcv-channel-btn' + (otpChannel === "whatsapp" ? " active" : "") + '" data-channel="whatsapp">' +
-                '<span class="tcv-channel-ic">&#128172;</span> WhatsApp' +
-              '</button>' +
-              '<button type="button" class="tcv-channel-btn' + (otpChannel === "sms" ? " active" : "") + '" data-channel="sms">' +
-                '<span class="tcv-channel-ic">&#9993;</span> SMS' +
-              '</button>' +
-            '</div>' +
-          '</div>' +
           '<div class="tcv-elig-error" id="tcv-elig-error"></div>' +
-          '<button class="tcv-submit" id="tcv-send-otp">Send OTP via ' + (otpChannel === "sms" ? "SMS" : "WhatsApp") + '</button>' +
-          '<div class="tcv-new-customer">New customer? <button type="button" class="tcv-change-link" id="tcv-go-register">Register with today\'s purchase</button></div>' +
+          '<button class="tcv-submit" id="tcv-send-otp">Verify</button>' +
         '</div>';
-      document.getElementById("tcv-send-otp").addEventListener("click", onSendOtp);
-      document.getElementById("tcv-go-register").addEventListener("click", function() {
-        otpStage = "register";
-        renderEligibilityForm();
-      });
-      eligWrapEl.querySelectorAll(".tcv-channel-btn").forEach(function(btn) {
-        btn.addEventListener("click", function() {
-          otpChannel = btn.getAttribute("data-channel");
-          renderEligibilityForm();
-        });
-      });
-    } else if (otpStage === "register") {
-      eligWrapEl.innerHTML =
-        '<div class="tcv-elig">' +
-          '<div class="tcv-elig-head">Register with today\'s purchase</div>' +
-          '<div class="tcv-elig-sub">Made a purchase today but this is your first time voting? Enter the mobile number and Transfer ID from today\'s receipt to create your account on the spot.</div>' +
-          '<div class="tcv-field">' +
-            '<label class="tcv-label">Mobile Number</label>' +
-            '<input type="text" class="tcv-input" id="tcv-reg-mobile" placeholder="e.g. 25263xxxxxxx">' +
-          '</div>' +
-          '<div class="tcv-field">' +
-            '<label class="tcv-label">Transfer ID (from today\'s receipt)</label>' +
-            '<input type="text" inputmode="numeric" class="tcv-input" id="tcv-reg-transfer" placeholder="e.g. 13770304514">' +
-          '</div>' +
-          '<div class="tcv-elig-error" id="tcv-elig-error"></div>' +
-          '<button class="tcv-submit" id="tcv-register-submit">Register &amp; send OTP</button>' +
-          '<div class="tcv-new-customer"><button type="button" class="tcv-change-link" id="tcv-back-to-enter">Back</button></div>' +
-        '</div>';
-      document.getElementById("tcv-register-submit").addEventListener("click", onRegisterSubmit);
-      document.getElementById("tcv-back-to-enter").addEventListener("click", function() {
-        otpStage = "enter";
-        renderEligibilityForm();
-      });
+      document.getElementById("tcv-send-otp").addEventListener("click", onLookupSubmit);
     } else {
       var maskedMobile = otpMobile.length > 4 ? otpMobile.slice(0, -4).replace(/./g, "\u2022") + otpMobile.slice(-4) : otpMobile;
       eligWrapEl.innerHTML =
         '<div class="tcv-elig">' +
-          '<div class="tcv-elig-head">Verify to vote</div>' +
+          '<div class="tcv-elig-head">Confirm to vote</div>' +
           '<div class="tcv-elig-sub">We check a few things before your vote counts &mdash; this keeps the contest fair for every real student.</div>' +
           '<div class="tcv-verified-summary">' +
             '<div><div class="name">' + otpFullName + '<span class="tcv-field-tag">From database</span></div>' +
             '<div class="meta">ID ' + otpStudentId + ' &middot; ' + maskedMobile + '</div></div>' +
             '<button class="tcv-change-link" id="tcv-otp-change">Change</button>' +
           '</div>' +
-          '<div class="tcv-field">' +
-            '<label class="tcv-label">OTP Code</label>' +
-            '<div class="tcv-otp-row">' +
-              '<input type="text" inputmode="numeric" maxlength="6" class="tcv-input" id="tcv-otp-input" placeholder="6-digit code">' +
-              '<button class="tcv-resend-btn" id="tcv-otp-resend">Resend</button>' +
-            '</div>' +
-            '<div class="tcv-otp-note">Sent by ' + (otpChannel === "sms" ? "SMS" : "WhatsApp") + ' to the number above. It expires a few minutes after sending.</div>' +
-          '</div>' +
           '<div class="tcv-check-row"><input type="checkbox" id="tcv-chk-account"><span>I have a registered customer account and made at least one purchase this semester.</span></div>' +
           '<div class="tcv-check-row"><input type="checkbox" id="tcv-chk-age"><span>I am 18 years of age or older.</span></div>' +
           '<div class="tcv-check-row"><input type="checkbox" id="tcv-chk-staff"><span>I am not an employee, administrator, or organizer of this contest.</span></div>' +
           '<div class="tcv-elig-error" id="tcv-elig-error"></div>' +
-          '<button class="tcv-submit" id="tcv-elig-submit">Verify &amp; continue</button>' +
+          '<button class="tcv-submit" id="tcv-elig-submit">Confirm &amp; continue</button>' +
         '</div>';
       document.getElementById("tcv-otp-change").addEventListener("click", function() {
         otpStage = "enter";
         renderEligibilityForm();
       });
-      document.getElementById("tcv-otp-resend").addEventListener("click", onResendOtp);
       document.getElementById("tcv-elig-submit").addEventListener("click", onEligibilitySubmit);
-      updateResendState();
     }
   }
 
-  function updateResendState() {
-    var btn = document.getElementById("tcv-otp-resend");
-    if (!btn) return;
-    var msLeft = otpResendAt - Date.now();
-    if (msLeft > 0) {
-      btn.disabled = true;
-      btn.textContent = "Resend in " + Math.ceil(msLeft / 1000) + "s";
-      setTimeout(updateResendState, 500);
-    } else {
-      btn.disabled = false;
-      btn.textContent = "Resend";
-    }
-  }
-
-  async function requestOtp(showErrorsOn) {
+  // Verifies Student ID + registered mobile together against the roster.
+  // No code is sent — a match is treated as sufficient to proceed to the
+  // confirm step.
+  async function verifyStudent(studentId, mobile, showErrorsOn) {
     var errEl = document.getElementById("tcv-elig-error");
     try {
-      var data = await api("/api/otp/send", {
+      var data = await api("/api/students/lookup", {
         method: "POST",
-        body: JSON.stringify({ mobile: otpMobile, channel: otpChannel }),
+        body: JSON.stringify({ studentId: studentId, mobile: mobile }),
       });
       otpStudentId = data.studentId;
       otpFullName = data.fullName;
-      otpResendAt = Date.now() + 30000;
-      showToast("OTP sent via " + (otpChannel === "sms" ? "SMS" : "WhatsApp") + " to " + otpMobile + ".");
       return true;
     } catch (err) {
       var msg = {
-        mobile_not_found: "We couldn't find a customer account with that mobile number.",
-        whatsapp_failed: "We couldn't send the WhatsApp message right now — try again, or switch to SMS.",
-        sms_failed: "We couldn't send the SMS right now — try again, or switch to WhatsApp.",
-        missing_fields: "Enter your mobile number.",
-      }[err.code] || "Something went wrong sending the OTP. Try again.";
+        not_found: "We couldn't verify that Student ID and mobile number together. Double-check both and try again.",
+        already_voted: "This Student ID has already voted.",
+        inactive: "This student account isn't active. Contact an administrator.",
+        missing_fields: "Enter both your Student ID and mobile number.",
+      }[err.code] || "Something went wrong verifying your account. Try again.";
       if (errEl) { errEl.textContent = msg; errEl.classList.add("show"); }
-      if (showErrorsOn) showErrorsOn.classList.add("err");
+      if (showErrorsOn) showErrorsOn.forEach(function(el) { el.classList.add("err"); });
       return false;
     }
   }
 
-  async function onResendOtp() {
-    if (Date.now() < otpResendAt) return;
-    var btn = document.getElementById("tcv-otp-resend");
-    btn.disabled = true;
-    btn.textContent = "Sending\u2026";
-    await requestOtp();
-    renderEligibilityForm();
-  }
-
-  async function onSendOtp() {
+  async function onLookupSubmit() {
+    var sidInput = document.getElementById("tcv-sid-input").value.trim();
     var accInput = document.getElementById("tcv-acc-input").value.trim();
     var errEl = document.getElementById("tcv-elig-error");
+    var sidEl = document.getElementById("tcv-sid-input");
     var accEl = document.getElementById("tcv-acc-input");
     var btn = document.getElementById("tcv-send-otp");
+    sidEl.classList.remove("err");
     accEl.classList.remove("err");
     errEl.classList.remove("show");
 
-    if (accInput.length < 6) {
-      errEl.textContent = "Enter the mobile number on your customer account.";
+    if (!sidInput || accInput.length < 6) {
+      errEl.textContent = "Enter both your Student ID and registered mobile number.";
       errEl.classList.add("show");
-      accEl.classList.add("err");
+      if (!sidInput) sidEl.classList.add("err");
+      if (accInput.length < 6) accEl.classList.add("err");
       return;
     }
 
     otpMobile = accInput;
     btn.disabled = true;
-    btn.textContent = "Sending OTP\u2026";
-    var ok = await requestOtp(accEl);
+    btn.textContent = "Verifying\u2026";
+    var ok = await verifyStudent(sidInput, accInput, [sidEl, accEl]);
     if (ok) {
-      otpStage = "sent";
+      otpStage = "confirm";
       renderEligibilityForm();
     } else {
       btn.disabled = false;
-      btn.textContent = "Send OTP via " + (otpChannel === "sms" ? "SMS" : "WhatsApp");
-    }
-  }
-
-  async function onRegisterSubmit() {
-    var mobileInput = document.getElementById("tcv-reg-mobile").value.trim();
-    var transferInput = document.getElementById("tcv-reg-transfer").value.trim();
-    var errEl = document.getElementById("tcv-elig-error");
-    var mobileEl = document.getElementById("tcv-reg-mobile");
-    var transferEl = document.getElementById("tcv-reg-transfer");
-    var btn = document.getElementById("tcv-register-submit");
-    mobileEl.classList.remove("err");
-    transferEl.classList.remove("err");
-    errEl.classList.remove("show");
-
-    if (mobileInput.length < 6) {
-      errEl.textContent = "Enter the mobile number from today's purchase.";
-      errEl.classList.add("show");
-      mobileEl.classList.add("err");
-      return;
-    }
-    if (transferInput.length < 4) {
-      errEl.textContent = "Enter the Transfer ID from today's receipt.";
-      errEl.classList.add("show");
-      transferEl.classList.add("err");
-      return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = "Registering\u2026";
-    try {
-      await api("/api/students/register", {
-        method: "POST",
-        body: JSON.stringify({ mobile: mobileInput, transferId: transferInput }),
-      });
-      showToast("Account created. Sending your OTP\u2026");
-      otpMobile = mobileInput;
-      var ok = await requestOtp();
-      if (ok) {
-        otpStage = "sent";
-        renderEligibilityForm();
-      } else {
-        otpStage = "enter";
-        renderEligibilityForm();
-      }
-    } catch (err) {
-      var msg = {
-        transaction_not_found: "That Transfer ID wasn't found. Double check today's receipt.",
-        transaction_already_used: "That Transfer ID has already been used to register an account.",
-        transaction_not_today: "That transaction isn't from today. Registration only works with today's purchase.",
-        transaction_mobile_mismatch: "That mobile number doesn't match the one on this transaction.",
-        already_registered: "This mobile number is already registered — try sending an OTP instead of registering.",
-      }[err.code] || "Couldn't register that account. Check the details and try again.";
-      errEl.textContent = msg;
-      errEl.classList.add("show");
-      btn.disabled = false;
-      btn.textContent = "Register & send OTP";
+      btn.textContent = "Verify";
     }
   }
 
   async function onEligibilitySubmit() {
-    var otpInput = document.getElementById("tcv-otp-input").value.trim();
     var chkAccount = document.getElementById("tcv-chk-account").checked;
     var chkAge = document.getElementById("tcv-chk-age").checked;
     var chkStaff = document.getElementById("tcv-chk-staff").checked;
     var errEl = document.getElementById("tcv-elig-error");
-    var otpEl = document.getElementById("tcv-otp-input");
     var btn = document.getElementById("tcv-elig-submit");
 
-    otpEl.classList.remove("err");
     errEl.classList.remove("show");
 
     if (!chkAccount || !chkAge || !chkStaff) {
@@ -1565,29 +1439,32 @@
     }
 
     btn.disabled = true;
-    btn.textContent = "Verifying\u2026";
+    btn.textContent = "Confirming\u2026";
     try {
-      var data = await api("/api/otp/verify", {
+      var data = await api("/api/session/create", {
         method: "POST",
-        body: JSON.stringify({ studentId: otpStudentId, code: otpInput }),
+        body: JSON.stringify({
+          studentId: otpStudentId,
+          mobile: otpMobile,
+          hasAccountConfirmed: chkAccount,
+          ageConfirmed: chkAge,
+          notStaffConfirmed: chkStaff,
+        }),
       });
       sessionToken = data.sessionToken;
       chkState = { account: chkAccount, age: chkAge, staff: chkStaff };
-      showToast("Verified. You can cast your one vote below.");
+      showToast("Confirmed. You can cast your one vote below.");
       await refreshResults();
       render();
     } catch (err) {
       var msg = {
-        otp_incorrect: "That code doesn't match. Check WhatsApp, or resend.",
-        otp_expired: "That code expired — tap resend for a new one.",
-        too_many_attempts: "Too many wrong attempts — request a new code.",
-        no_otp_pending: "Request a new code first.",
-      }[err.code] || "Couldn't verify that code. Try again.";
+        already_voted: "This account has already voted.",
+        student_not_found: "Couldn't confirm that account. Please start over.",
+      }[err.code] || "Couldn't confirm eligibility. Try again.";
       errEl.textContent = msg;
       errEl.classList.add("show");
-      otpEl.classList.add("err");
       btn.disabled = false;
-      btn.textContent = "Verify & continue";
+      btn.textContent = "Confirm & continue";
     }
   }
 
@@ -1723,65 +1600,10 @@
     footerRightEl.textContent = showResultsNumbers ? "Results verified & published" : "Results hidden until voting closes";
   }
 
-  // ---- Location: voters must be near campus. Client-side check here is
-  // just for a fast, friendly error — the server re-checks independently
-  // in /api/vote, since a client-side-only check is trivially bypassable
-  // by anyone calling the API directly. ----
-  function getBrowserLocation() {
-    return new Promise(function(resolve, reject) {
-      if (!navigator.geolocation) {
-        reject(new Error("geolocation_unsupported"));
-        return;
-      }
-      navigator.geolocation.getCurrentPosition(
-        function(pos) {
-          resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
-        },
-        function(err) {
-          reject(err);
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
-      );
-    });
-  }
-
-  function distanceMeters(lat1, lng1, lat2, lng2) {
-    var R = 6371000;
-    var toRad = function(d) { return (d * Math.PI) / 180; };
-    var dLat = toRad(lat2 - lat1);
-    var dLng = toRad(lng2 - lng1);
-    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  }
-
   async function castVote(id) {
     if (!sessionToken || votedThisSession || serverStatus !== "open") return;
-
     var btns = listEl.querySelectorAll(".tcv-vote-btn");
     btns.forEach(function(b) { b.disabled = true; });
-
-    var loc;
-    try {
-      showToast("Checking your location\u2026");
-      loc = await getBrowserLocation();
-    } catch (err) {
-      var locMsg = err.code === 1
-        ? "Location access was denied. Enable location for this site and try again \u2014 voting is campus-only."
-        : "Couldn't get your location. Make sure location services are on and try again.";
-      showToast(locMsg);
-      btns.forEach(function(b) { b.disabled = false; });
-      return;
-    }
-
-    if (CAMPUS && CAMPUS.lat && CAMPUS.lng) {
-      var dist = distanceMeters(loc.lat, loc.lng, CAMPUS.lat, CAMPUS.lng);
-      if (dist > CAMPUS.radiusMeters) {
-        showToast("You're about " + Math.round(dist) + "m from campus \u2014 voting is only allowed within " + CAMPUS.radiusMeters + "m.");
-        btns.forEach(function(b) { b.disabled = false; });
-        return;
-      }
-    }
 
     try {
       await api("/api/vote", {
@@ -1789,12 +1611,6 @@
         body: JSON.stringify({
           sessionToken: sessionToken,
           nomineeId: id,
-          hasAccountConfirmed: chkState.account,
-          ageConfirmed: chkState.age,
-          notStaffConfirmed: chkState.staff,
-          lat: loc.lat,
-          lng: loc.lng,
-          locationAccuracy: loc.accuracy,
         }),
       });
       votedThisSession = true;
@@ -1809,8 +1625,6 @@
         voting_closed: "Voting has closed.",
         voting_before: "Voting hasn't opened yet.",
         invalid_or_expired_session: "Your verification expired — please verify again.",
-        outside_campus: (err.detail) || "You're too far from campus to vote right now.",
-        location_required: "Location is required to vote.",
       }[err.code] || "Couldn't record your vote — try again.";
       showToast(msg);
       if (err.code === "invalid_or_expired_session") {
@@ -1828,12 +1642,9 @@
       VOTING_START = new Date(cfg.votingStart);
       VOTING_END = new Date(cfg.votingEnd);
       serverStatus = cfg.status;
-      CAMPUS = cfg.campus || null;
     } catch (err) {
-      eligWrapEl.innerHTML =
-        '<div class="tcv-elig"><div class="tcv-elig-head">Can\'t reach the vote server</div>' +
-        '<div class="tcv-elig-sub">This app needs its backend running at <code>' + API_BASE_URL + '</code>. ' +
-        'See /vote-backend for setup — deploy it, then set API_BASE_URL at the top of this file to its real URL.</div></div>';
+      stateNoteWrapEl.innerHTML =
+        '<div class="tcv-state-note">Can\'t reach the results server right now. This page needs its backend running at <code>' + API_BASE_URL + '</code>.</div>';
       return;
     }
     await refreshResults();
