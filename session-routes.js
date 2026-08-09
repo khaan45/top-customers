@@ -1,6 +1,7 @@
 /**
  * Routes for the eligibility flow:
- *   POST /api/students/lookup   -> verify Student ID + mobile TOGETHER against the roster
+ *   POST /api/students/lookup   -> match a phone number against the roster,
+ *                                  and pull back Student ID + name automatically
  *   POST /api/session/create    -> issue a voting session once checkboxes are confirmed
  *
  * Depends on voting-logic.js (normalizePhone) and schema.sql (students, sessions tables).
@@ -13,42 +14,37 @@ const SESSION_TTL_MINUTES = 45; // long enough to browse nominees and vote, not 
 
 // ------------------------------------------------------------------
 // POST /api/students/lookup
-// body: { studentId, mobile }
+// body: { mobile }
 // success: { studentId, fullName }
-// failure: 404 { error: "not_found" } | 403 { error: "inactive" }
+// failure: 404 { error: "mobile_not_found" } | 403 { error: "inactive" }
 //          | 409 { error: "already_voted" } | 400 { error: "missing_fields" }
 //
-// Requiring both fields (rather than mobile alone) means a match proves
-// the requester knows two pieces of information about the student, not
-// just a guessable phone number — meaningfully harder to spoof, though
-// still not proof of identity the way OTP would be.
+// Matching on phone number alone is simpler for students (no ID needed on
+// hand), but means a match only proves the phone number is on the roster —
+// not that the person typing it is its actual owner. Anyone who knows or
+// guesses a registered number could confirm eligibility for that student.
+// The one-vote-per-student constraint in the database is what actually
+// caps the damage: at most one vote gets "used up" per real account.
 // ------------------------------------------------------------------
 function registerLookupRoute(app, db) {
   app.post("/api/students/lookup", async (req, res) => {
-    const { studentId, mobile } = req.body || {};
+    const { mobile } = req.body || {};
 
-    if (!studentId || typeof studentId !== "string" ||
-        !mobile || typeof mobile !== "string" || mobile.trim().length < 6) {
+    if (!mobile || typeof mobile !== "string" || mobile.trim().length < 6) {
       return res.status(400).json({ error: "missing_fields" });
     }
 
+    const normalizedPhone = normalizePhone(mobile);
     const { rows } = await db.query(
-      "SELECT student_id, full_name, phone_number, status, has_voted FROM students WHERE student_id = $1",
-      [studentId]
+      "SELECT student_id, full_name, status, has_voted FROM students WHERE phone_number = $1",
+      [normalizedPhone]
     );
 
-    // Same "not_found" response whether the Student ID doesn't exist or
-    // exists but the mobile doesn't match — don't let this endpoint be
-    // used to confirm a guessed Student ID or a guessed mobile number
-    // against a known one.
     if (rows.length === 0) {
-      return res.status(404).json({ error: "not_found" });
+      return res.status(404).json({ error: "mobile_not_found" });
     }
 
     const student = rows[0];
-    if (normalizePhone(student.phone_number) !== normalizePhone(mobile)) {
-      return res.status(404).json({ error: "not_found" });
-    }
     if (student.status !== "Active") {
       return res.status(403).json({ error: "inactive" });
     }

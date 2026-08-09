@@ -1310,13 +1310,13 @@
       '</div>';
   }
 
-  // ---- Eligibility flow — Student ID + mobile checked together against
-  // the roster. No OTP: entering an ID/mobile pair that matches is enough
-  // to confirm eligibility here. This is stronger than mobile-only (an
-  // attacker needs both pieces, not just a guessed phone number), but
-  // still doesn't prove the person typing them is the account's actual
-  // owner. The one vote per student is enforced server-side either way
-  // (see /api/session/create and /api/vote), so the worst case is someone
+  // ---- Eligibility flow — mobile number checked against the roster. No
+  // OTP: entering a phone number that matches the roster is enough to
+  // confirm eligibility here. This trades away proof that the person
+  // typing the number is its actual owner — anyone who knows/guesses a
+  // registered number could confirm eligibility for that student. The one
+  // vote per student is still enforced server-side either way (see
+  // /api/session/create and /api/vote), so the worst case is someone
   // using up a classmate's single vote, not casting extra ones. ----
   var otpStage = "enter";   // "enter" -> "confirm"
   var otpMobile = "", otpStudentId = "", otpFullName = null;
@@ -1327,13 +1327,9 @@
       eligWrapEl.innerHTML =
         '<div class="tcv-elig">' +
           '<div class="tcv-elig-head">Verify to vote</div>' +
-          '<div class="tcv-elig-sub">Enter your Student ID and registered mobile number &mdash; both must match our records.</div>' +
+          '<div class="tcv-elig-sub">Enter your mobile number &mdash; we\'ll look up your account automatically.</div>' +
           '<div class="tcv-field">' +
-            '<label class="tcv-label">Student ID</label>' +
-            '<input type="text" class="tcv-input" id="tcv-sid-input" placeholder="e.g. STU0001">' +
-          '</div>' +
-          '<div class="tcv-field">' +
-            '<label class="tcv-label">Registered Mobile Number</label>' +
+            '<label class="tcv-label">Mobile Number</label>' +
             '<input type="text" class="tcv-input" id="tcv-acc-input" placeholder="e.g. 25263xxxxxxx">' +
           '</div>' +
           '<div class="tcv-elig-error" id="tcv-elig-error"></div>' +
@@ -1365,55 +1361,53 @@
     }
   }
 
-  // Verifies Student ID + registered mobile together against the roster.
-  // No code is sent — a match is treated as sufficient to proceed to the
-  // confirm step.
-  async function verifyStudent(studentId, mobile, showErrorsOn) {
+  // Looks the phone number up against the roster and pulls back Student ID
+  // + name automatically. No code is sent — a match on the phone number
+  // alone is treated as sufficient to proceed to the confirm step. (This
+  // trades away proof that the person typing the number is its actual
+  // owner — see the note above the state variables.)
+  async function lookupAccount(mobile, showErrorsOn) {
     var errEl = document.getElementById("tcv-elig-error");
     try {
       var data = await api("/api/students/lookup", {
         method: "POST",
-        body: JSON.stringify({ studentId: studentId, mobile: mobile }),
+        body: JSON.stringify({ mobile: mobile }),
       });
       otpStudentId = data.studentId;
       otpFullName = data.fullName;
       return true;
     } catch (err) {
       var msg = {
-        not_found: "We couldn't verify that Student ID and mobile number together. Double-check both and try again.",
-        already_voted: "This Student ID has already voted.",
+        mobile_not_found: "We couldn't find a customer account with that mobile number.",
+        already_voted: "This account has already voted.",
         inactive: "This student account isn't active. Contact an administrator.",
-        missing_fields: "Enter both your Student ID and mobile number.",
-      }[err.code] || "Something went wrong verifying your account. Try again.";
+        missing_fields: "Enter your mobile number.",
+      }[err.code] || "Something went wrong looking up that account. Try again.";
       if (errEl) { errEl.textContent = msg; errEl.classList.add("show"); }
-      if (showErrorsOn) showErrorsOn.forEach(function(el) { el.classList.add("err"); });
+      if (showErrorsOn) showErrorsOn.classList.add("err");
       return false;
     }
   }
 
   async function onLookupSubmit() {
-    var sidInput = document.getElementById("tcv-sid-input").value.trim();
     var accInput = document.getElementById("tcv-acc-input").value.trim();
     var errEl = document.getElementById("tcv-elig-error");
-    var sidEl = document.getElementById("tcv-sid-input");
     var accEl = document.getElementById("tcv-acc-input");
     var btn = document.getElementById("tcv-send-otp");
-    sidEl.classList.remove("err");
     accEl.classList.remove("err");
     errEl.classList.remove("show");
 
-    if (!sidInput || accInput.length < 6) {
-      errEl.textContent = "Enter both your Student ID and registered mobile number.";
+    if (accInput.length < 6) {
+      errEl.textContent = "Enter the mobile number on your customer account.";
       errEl.classList.add("show");
-      if (!sidInput) sidEl.classList.add("err");
-      if (accInput.length < 6) accEl.classList.add("err");
+      accEl.classList.add("err");
       return;
     }
 
     otpMobile = accInput;
     btn.disabled = true;
-    btn.textContent = "Verifying\u2026";
-    var ok = await verifyStudent(sidInput, accInput, [sidEl, accEl]);
+    btn.textContent = "Looking up account\u2026";
+    var ok = await lookupAccount(accInput, accEl);
     if (ok) {
       otpStage = "confirm";
       renderEligibilityForm();
